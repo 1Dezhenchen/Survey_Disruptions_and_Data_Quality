@@ -13,12 +13,12 @@ library(tidyverse)
 
 #### Load downloaded data ####
 raw_data <- read_csv(
-  file = "starter_folder-main 2/data/01-raw_data/raw_data.csv",
+  file = "data/01-raw_data/raw_data.csv",
   show_col_types = TRUE
 )
 
 #### Save data ####
-write_csv(raw_data, "starter_folder-main 2/data/01-raw_data/raw_data.csv")
+write_csv(raw_data, "data/01-raw_data/raw_data.csv")
 
 
 
