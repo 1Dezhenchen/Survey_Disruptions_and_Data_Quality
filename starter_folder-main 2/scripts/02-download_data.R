@@ -9,18 +9,18 @@
 
 
 #### Workspace setup ####
-library(opendatatoronto)
 library(tidyverse)
-# [...UPDATE THIS...]
 
-#### Download data ####
-# [...ADD CODE HERE TO DOWNLOAD...]
-
-
+#### Load downloaded data ####
+raw_data <- read_csv(
+  file = "starter_folder-main 2/data/01-raw_data/raw_data.csv",
+  show_col_types = TRUE
+)
 
 #### Save data ####
-# [...UPDATE THIS...]
-# change the_raw_data to whatever name you assigned when you downloaded it.
-write_csv(the_raw_data, "inputs/data/raw_data.csv") 
+write_csv(raw_data, "starter_folder-main 2/data/01-raw_data/raw_data.csv")
+
+
+
 
          
