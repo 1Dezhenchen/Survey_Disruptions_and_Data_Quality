@@ -1,6 +1,5 @@
 #### Preamble ####
-# Purpose: Simulates a dataset of Australian electoral divisions, including the 
-  #state and party that won each division.
+# Purpose: Simulates a dataset to explore potential patterns and values for analysis of the influence of interview disruptions on survey data quality.
 # Author: Dezhen Chen
 # Date: 26 November 2024
 # Contact: dezhen.chen@mail.utoronto.ca

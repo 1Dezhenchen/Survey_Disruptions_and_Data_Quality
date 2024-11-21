@@ -1,6 +1,5 @@
 #### Preamble ####
-# Purpose: Simulates a dataset of Australian electoral divisions, including the 
-#state and party that won each division.
+# Purpose:Tests the structure and validity of the cleaned interview response dataset.
 # Author: Dezhen Chen
 # Date: 26 November 2024
 # Contact: dezhen.chen@mail.utoronto.ca

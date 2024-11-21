@@ -1,6 +1,5 @@
 #### Preamble ####
-# Purpose: Simulates a dataset of Australian electoral divisions, including the 
-#state and party that won each division.
+# Purpose: Models the impact of various factors on interview data quality using stan_glm.
 # Author: Dezhen Chen
 # Date: 26 November 2024
 # Contact: dezhen.chen@mail.utoronto.ca
