@@ -142,3 +142,4 @@ write_parquet(cleaned_data, "data/02-analysis_data/analysis_data.parquet")
 write_parquet(analysis_data_train, "data/02-analysis_data/train_data.parquet")
 write_parquet(analysis_data_test, "data/02-analysis_data/test_data.parquet")
 
+
