@@ -8,11 +8,12 @@
 # Any other information needed? [...UPDATE THIS...]
 
 # Load required libraries
+library(arrow)
 library(dplyr)
 library(rsample)
 
 # Load the dataset
-raw_data <- read.csv("starter_folder-main 2/data/01-raw_data/raw_data.csv", stringsAsFactors = FALSE)
+raw_data <- read.csv("data/01-raw_data/raw_data.csv", stringsAsFactors = FALSE)
 
 
 # Step 1: Drop columns with more than 80% missing values
@@ -76,7 +77,55 @@ cleaned_data <- cleaned_data %>% rename(
   questionnaire_language = intlnga,
   interviewer_id = intnum
 )
+# Step: Recode 'respondent_understood' to binary during data cleaning
+cleaned_data <- cleaned_data %>%
+  mutate(respondent_understood_binary = case_when(
+    respondent_understood %in% c(1, 2, 3) ~ "Not_understood",  # 将等级 1, 2, 3 归为 "不理解"
+    respondent_understood %in% c(4, 5) ~ "Understood",         # 将等级 4, 5 归为 "理解"
+    TRUE ~ NA_character_                                       # 对缺失值保持为 NA
+  )) %>%
+  mutate(respondent_understood_binary = as.factor(respondent_understood_binary))
 
+# Step: Simplify categories for variables with more than or equal to 5 categories, excluding 'country'
+cleaned_data <- cleaned_data %>%
+  mutate(
+    interview_conduct_method = ifelse(interview_conduct_method %in% names(sort(table(interview_conduct_method), decreasing = TRUE))[1:5],
+                                      interview_conduct_method, "Other"),
+    question_clarification = ifelse(question_clarification %in% names(sort(table(question_clarification), decreasing = TRUE))[1:5],
+                                    question_clarification, "Other"),
+    respondent_reluctant = ifelse(respondent_reluctant %in% names(sort(table(respondent_reluctant), decreasing = TRUE))[1:5],
+                                  respondent_reluctant, "Other"),
+    respondent_tried_best = ifelse(respondent_tried_best %in% names(sort(table(respondent_tried_best), decreasing = TRUE))[1:5],
+                                   respondent_tried_best, "Other"),
+    partner_interference = ifelse(partner_interference %in% names(sort(table(partner_interference), decreasing = TRUE))[1:5],
+                                  partner_interference, "Other"),
+    child_interference = ifelse(child_interference %in% names(sort(table(child_interference), decreasing = TRUE))[1:5],
+                                child_interference, "Other"),
+    parent_interference = ifelse(parent_interference %in% names(sort(table(parent_interference), decreasing = TRUE))[1:5],
+                                 parent_interference, "Other"),
+    relative_interference = ifelse(relative_interference %in% names(sort(table(relative_interference), decreasing = TRUE))[1:5],
+                                   relative_interference, "Other"),
+    non_relative_interference = ifelse(non_relative_interference %in% names(sort(table(non_relative_interference), decreasing = TRUE))[1:5],
+                                       non_relative_interference, "Other"),
+    interviewer_gender = ifelse(interviewer_gender %in% names(sort(table(interviewer_gender), decreasing = TRUE))[1:5],
+                                interviewer_gender, "Other")
+  ) %>%
+  mutate(
+    interview_conduct_method = as.factor(interview_conduct_method),
+    question_clarification = as.factor(question_clarification),
+    respondent_reluctant = as.factor(respondent_reluctant),
+    respondent_tried_best = as.factor(respondent_tried_best),
+    partner_interference = as.factor(partner_interference),
+    child_interference = as.factor(child_interference),
+    parent_interference = as.factor(parent_interference),
+    relative_interference = as.factor(relative_interference),
+    non_relative_interference = as.factor(non_relative_interference),
+    interviewer_gender = as.factor(interviewer_gender)
+  )
+
+cleaned_data <- cleaned_data %>% drop_na()
+cleaned_data  <- cleaned_data  %>%
+  distinct(respondent_id, .keep_all = TRUE)
 # Step 5: Split the dataset into training and testing sets
 # Perform a stratified split based on the 'country' variable to ensure all levels are present in both sets
 set.seed(123) # Set seed for reproducibility
@@ -88,8 +137,8 @@ analysis_data_train <- training(split)
 analysis_data_test <- testing(split)
 
 # Step 6: Save data
-write.csv(cleaned_data, "starter_folder-main 2/data/02-analysis_data/analysis_data.csv", row.names = FALSE)
-write_parquet(cleaned_data, "starter_folder-main 2/data/02-analysis_data/analysis_data.parquet")
-write_parquet(analysis_data_train, "starter_folder-main 2/data/02-analysis_data/train_data.parquet")
-write_parquet(analysis_data_test, "starter_folder-main 2/data/02-analysis_data/test_data.parquet")
+write.csv(cleaned_data, "data/02-analysis_data/analysis_data.csv", row.names = FALSE)
+write_parquet(cleaned_data, "data/02-analysis_data/analysis_data.parquet")
+write_parquet(analysis_data_train, "data/02-analysis_data/train_data.parquet")
+write_parquet(analysis_data_test, "data/02-analysis_data/test_data.parquet")
 
