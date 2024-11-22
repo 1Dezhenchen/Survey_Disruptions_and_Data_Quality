@@ -1,13 +1,12 @@
 ---
-title: "My title"
-subtitle: "My subtitle if needed"
+title: "The Impact of Interview Disruptions on Data Quality in Social Surveys"
+subtitle: "Analyzing How Various Interferences Affect Respondent Accuracy and Survey Reliability"
 author: 
-  - First author
-  - Another author
-thanks: "Code and data are available at: [https://github.com/RohanAlexander/starter_folder](https://github.com/RohanAlexander/starter_folder)."
+  - Dezhen Chen
+thanks: "Code and data are available at: https://github.com/1Dezhenchen/The-Influence-of-Interview-Disruptions-on-Respondent-Data-Quality-in-Social-Surveys."
 date: today
 date-format: long
-abstract: "First sentence. Second sentence. Third sentence. Fourth sentence."
+abstract: "In social surveys, disruptions during interviews can significantly impact the quality of respondent data, which in turn affects the reliability of the survey results. This study uses Bayesian hierarchical logistic regression to analyze how various factors—such as the type of disruption, the presence of different family members, interview conduct method, interviewer characteristics, and respondent attitudes—affect the accuracy and quality of responses. Our analysis shows that different types of disruptions have distinct impacts on the quality of responses, revealing critical insights into optimizing survey conditions to improve data reliability and validity."
 format: pdf
 number-sections: true
 bibliography: references.bib
@@ -24,21 +23,21 @@ library(palmerpenguins)
 
 
 # Introduction
+In recent years, the quality of social survey data has become an important topic of inquiry, especially with regard to how different disruptions impact respondent behavior. Several studies have contributed to this body of knowledge by focusing on factors that may affect the reliability of survey responses. Groves et al. (2009) examined the role of interviewer characteristics—such as experience and demeanor—in shaping the quality of responses through a multi-level modeling approach. In another key study, Couper and de Leeuw (2003) investigated how different modes of conducting interviews, like in-person versus telephone, influenced the comfort and attentiveness of respondents. Fowler and Mangione (1990) took a different approach by analyzing observational data to assess the impact of third-party presence during interviews. Although these works laid a valuable foundation for understanding data quality, there remains a gap in systematically analyzing the distinct effects of various kinds of disruptions, such as familial or environmental interference, on respondent understanding and response accuracy.
 
-Overview paragraph
+This study endeavors to address these overlooked aspects by closely examining the role of interview disruptions on data quality in a major social survey. Specifically, our analysis explores the influence of different types of interferences—including interruptions from partners, children, and other family members—on respondents' comprehension and engagement during the interview process. We employed a Bayesian logistic regression model utilizing the rstanarm package in R to capture these influences. The model incorporates a range of predictor variables, such as interviewer characteristics (age and gender), different methods of interview administration, and family-related interferences. During data preparation, the categorical levels of several predictor variables were simplified, excluding the 'country' variable, to ensure interpretability and to streamline model estimation. We also included indicators of respondent attitudes, such as whether questions were clarified during the interview or if reluctance to answer was observed, aiming for a more comprehensive understanding of respondent engagement.
 
-Estimand paragraph
+Our results reveal compelling insights into the effects of these disruptions on data quality. We found that family-related interferences, notably from partners and parents, were associated with reduced comprehension on the part of respondents. The findings also suggested that interviews conducted in-person resulted in significantly higher levels of respondent understanding compared to those conducted by telephone. Additionally, older interviewers generally achieved better data quality, which could reflect an ability to manage disruptions more effectively or employ better rapport-building techniques. The influence of the interviewer's gender was also noted, though it appeared to interact in more complex ways with other factors such as the mode of interview and the specific type of interference. Taken together, these findings underscore the importance of managing both environmental and personal factors during interviews to improve data accuracy.
 
-Results paragraph
+Beyond merely quantifying these effects, our study provides deeper implications for enhancing data collection practices in the field. The evidence points to the need for improved interviewer training focused on managing disruptions effectively, which can help ensure the collection of high-quality data even in less-than-ideal circumstances. The significant negative effects of family interference suggest that in-home surveys could benefit from targeted strategies to minimize such disruptions, including adjusting the timing of interviews or providing incentives for privacy during responses. Furthermore, the results highlight the importance of understanding respondent reluctance and tailoring interviewer interactions to reduce its occurrence. These insights have relevance for not only improving the current practices of social surveys but also for shaping future methodologies in an increasingly diverse and complex interviewing landscape.
 
-Why it matters paragraph
-
-Telegraphing paragraph: The remainder of this paper is structured as follows. @sec-data....
-
+The remainder of this paper is organized to present a comprehensive exploration of these topics. Section 2 provides a detailed overview of the dataset, focusing on the different variables and their role in assessing data quality. It also outlines the preprocessing steps taken, including data cleaning and the recoding of variables. Section 3 introduces the Bayesian logistic regression methodology, explaining the statistical approach and justifying the selection of priors for the analysis. In Section 4, we present the empirical findings, including parameter estimates and an interpretation of the relationships uncovered by the model. Section 5 discusses the practical implications of these findings, emphasizing the improvements needed in interviewer training and the strategies for reducing respondent interference. Finally, Section 6 summarizes the key contributions of this research, outlines the limitations, and suggests avenues for future work—particularly concerning the integration of new data collection technologies and adaptive survey designs aimed at mitigating the impact of disruptions on respondent data quality.
 
 
 
 
+# Estimand
+This study aims to evaluate the factors that influence the quality and reliability of survey responses during interview disruptions in social surveys. By analyzing variables such as different types of interferences (partner, child, parent, and relative interferences), interview methodologies, the demographic characteristics of interviewers (such as age and gender), the language of the questionnaire, and respondent behaviors like reluctance, clarification requests, and effort put into answering, this research seeks to understand how these elements affect the consistency and clarity of responses. The core goal is to determine the impact of these factors on respondent understanding and data reliability, thereby providing insights into improving survey methods and reducing biases in data collection.
 
 # Data {#sec-data}
 
