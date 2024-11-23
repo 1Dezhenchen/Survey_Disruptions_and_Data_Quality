@@ -17,8 +17,13 @@ bibliography: references.bib
 #| warning: false
 #| message: false
 
+library(arrow)
+library(knitr)
+library(rstanarm)
 library(tidyverse)
-library(palmerpenguins)
+library(ggplot2)
+library(bayesplot)
+library(ggridges)
 ```
 
 
@@ -43,66 +48,194 @@ This study aims to evaluate the factors that influence the quality and reliabili
 
 ## Overview
 
-We use the statistical programming language R [@citeR].... Our data [@shelter].... Following @tellingstories, we consider...
+We use the statistical programming language R (R Core Team 2023) to process, analyze, and visualize survey data exploring the impact of interview disruptions on response quality. The dataset used in this study includes several subsets tailored to different stages of the analysis, enabling a systematic and detailed examination of the research questions. The main dataset for modeling consists of 9,743 rows and 25 variables, capturing detailed information about different types of disruptions (e.g., partner, child, or relative interference), interview methods, and respondent characteristics.
 
-Overview text
+To ensure the reliability of the analysis, we filtered the data to exclude incomplete or ambiguous responses for key variables, such as missing values in "respondent_understood." Responses were also recoded into binary categories to focus on meaningful distinctions in response quality, while variables with excessive categories were grouped to improve interpretability. These preprocessing steps were essential to refine the dataset and facilitate robust modeling.
 
+The following R packages were employed to streamline the data analysis workflow:
+
+- **tidyverse** (Wickham et al. 2021): Used for efficient data manipulation, cleaning, and transformation. It includes:
+- **dplyr** (Wickham, François, et al. 2021): For summarizing and managing complex datasets.
+- **ggplot2** (Wickham 2021): For creating powerful and flexible visualizations.
+  
+- **rstanarm** (Team 2021): Facilitated the implementation of Bayesian models, enabling straightforward regression modeling using Stan.
+
+- **arrow** (Apache Arrow 2021): Employed for efficiently reading and writing large datasets, enhancing data handling capabilities across systems.
+
+- **car** (Fox et al. 2021): Provided functions for regression diagnostics and other statistical analyses, particularly useful for checking assumptions and model validity.
+
+- **brms** (Bürkner 2021): A package for Bayesian regression modeling, which was used to implement more complex modeling approaches for the data.
+
+- **rsample** (Kuhn 2021): Used for creating resampling datasets, ensuring robust model validation by facilitating cross-validation and bootstrapping techniques.
+
+- **janitor** (Firke 2021): Simplified data cleaning processes by helping manage variable names and data structures, making raw data easier to handle.
+
+- **GGally** (Schloerke et al. 2021): Used to enhance ggplot2 visualizations by providing additional functions for correlation plots and pairwise visualizations, which are useful for exploratory data analysis.
+This study aims to provide practical insights into how various disruptions affect data quality in survey settings, helping to optimize survey design and execution in the future.
 ## Measurement
 	
-Some paragraphs about how we go from a phenomena in the world to an entry in the dataset.
+The data for this study is sourced from the European Social Survey (ESS), which collects information on societal attitudes and behaviors across multiple European countries. The dataset focuses on respondents’ understanding of survey questions, their cooperation levels, and the impact of environmental factors such as interruptions during interviews. All responses are collected using standardized methods to ensure comparability across countries.
+
+Different countries may implement localized adaptations in survey administration, which could influence response behaviors. To account for this, country-level metadata is included, allowing for the analysis of cross-national variations.
+```{r}
+#| warning: false
+#| message: false
+#| echo: false
+#| label: tbl-aerial_preview
+#| tbl-cap: "Survey responses on the impact of interview disruptions across countries in social surveys"
+
+# Load in data
+analysis_data <- read_parquet(here::here("data/02-analysis_data/analysis_data.parquet"))
+
+# Random sampling if needed
+set.seed(131)
+sampled_data <-analysis_data %>%
+  sample_n(5000)
+
+analysis_data |>
+  head() |>
+  kable(booktabs = TRUE, align = "c")
+```
 
 ## Outcome variables
 
-Add graphs, tables and text. Use sub-sub-headings for each outcome variable or update the subheading to be singular.
+Our analysis focuses on the following variables, with a specific focus on **respondent_understood_binary** as the dependent variable:
+
+- **respondent_understood_binary**: A binary variable indicating whether the respondent fully understood the survey questions. It was recoded as:
+  - *Understood*: Respondents who provided clear and accurate answers, indicating full comprehension of the questions.
+  - *Not understood*: Respondents who exhibited difficulties in understanding the questions, resulting in incomplete or unclear responses.
+
+- **interview_conduct_method**: The method by which the interview was conducted, with the following possible categories:
+  - *Face-to-face*: In-person interviews conducted by the surveyor.
+  - *Telephone*: Interviews conducted remotely via phone.
+  - *Self-administered*: Surveys completed by respondents themselves without direct interaction with a surveyor.
+
+- **child_interference**: Indicates whether interruptions by children occurred during the interview, with binary values:
+  - *Yes*: The interview was interrupted by children.
+  - *No*: No interruptions by children were recorded.
+
+- **partner_interference**: Indicates whether interruptions by partners occurred during the interview, with binary values:
+  - *Yes*: The interview was interrupted by the respondent's partner.
+  - *No*: No interruptions by the partner were recorded.
+
+- **question_clarification**: Tracks whether the respondent requested clarification on any survey questions. The variable includes:
+  - *Yes*: The respondent asked for clarification.
+  - *No*: The respondent did not ask for clarification.
+
+- **respondent_reluctant**: Captures the level of reluctance exhibited by the respondent during the interview process. Possible levels include:
+  - *Not reluctant*: The respondent showed no signs of hesitation.
+  - *Slightly reluctant*: The respondent exhibited mild hesitation.
+  - *Highly reluctant*: The respondent was clearly unwilling to engage with the survey.
+
+- **interviewer_age**: The age of the interviewer, used to explore whether interviewer demographics impact response quality.
+
+- **interviewer_gender**: The gender of the interviewer, categorized as:
+  - *Male*: Interviews conducted by male interviewers.
+  - *Female*: Interviews conducted by female interviewers.
+
+These variables were chosen for their potential influence on response quality and survey reliability, allowing for a comprehensive analysis of disruptions and other contextual factors. 
 
 
-
-Some of our data is of penguins (@fig-bills), from @palmerpenguins.
-
+Detailed insights into the distribution of interviewer age across different countries are visualized in Figure 1, which presents the density plot of interviewer age for the top five countries in the dataset.
 ```{r}
-#| label: fig-bills
-#| fig-cap: Bills of penguins
+#| label: fig-interviewer_age_density
+#| fig-cap: "Density plot of Interviewer Age by Top 5 Countries"
 #| echo: false
+#| fig.width: 8
+#| fig.height: 6
+top_countries <- analysis_data %>%
+  count(country, sort = TRUE) %>%
+  top_n(5, n) %>%
+  pull(country)
 
-ggplot(penguins, aes(x = island, fill = species)) +
-  geom_bar(alpha = 0.8) +
-  scale_fill_manual(values = c("darkorange","purple","cyan4"),
-                    guide = "none") +
-  theme_minimal() +
-  facet_wrap(~species, ncol = 1) +
-  coord_flip()
+filtered_data <- analysis_data %>%
+  filter(country %in% top_countries)
+
+ggplot(filtered_data, aes(x = interviewer_age, fill = country, color = country)) +
+  geom_density(alpha = 0.4) +
+  labs(title = "Density Plot of Interviewer Age by Top 5 Countries", x = "Interviewer Age", y = "Density") +
+  theme_minimal()
+
 ```
 
-Talk more about it.
+@fig-interviewer_age_density illustrates the distribution of interviewer ages across the top five countries in the dataset. The density plot highlights the variation in age demographics among interviewers from different countries, including Austria (AT), Germany (DE), Finland (FI), Great Britain (GB), and Ireland (IE).
 
-And also planes (@fig-planes). (You can change the height and width, but don't worry about doing that until you have finished every other aspect of the paper - Quarto will try to make it look nice and the defaults usually work well once you have enough text.)
+From the plot, we can observe that certain countries, such as Germany and Austria, have a higher concentration of interviewers in specific age ranges, while others, like Ireland, show a more dispersed distribution. This visualization provides an overview of the age composition of interviewers across these countries, offering useful context for understanding potential differences in survey implementation.
+```{r}
+#| label: fig-interference_frequency
+#| fig-cap: "Bar Plot of Interference Frequency by Respondent Tried Best"
+#| echo: false
+#| fig.width: 8
+#| fig.height: 6
+
+ggplot(analysis_data, aes(x = respondent_tried_best, fill = as.factor(interference_present))) +
+  geom_bar(position = "fill") +
+  labs(
+    title = "Bar Plot of Interference Frequency by Respondent Tried Best",
+    x = "Respondent Tried Best",
+    y = "Proportion",
+    fill = "Interference Present"
+  ) +
+  theme_minimal() +
+  scale_fill_brewer(palette = "Paired")
+
+
+
+```
+@fig-interference_frequency illustrates the frequency of interference during interviews across different levels of respondents’ effort, as measured by the variable "Respondent Tried Best." The bar plot shows the proportion of interviews with and without interference for each effort level, ranging from 1 (low effort) to 5 (high effort) and an additional "Other" category.
+
+From the plot, we can observe that interference is present across all effort levels, though its proportion varies slightly. Higher levels of effort (e.g., 4 and 5) tend to have a similar distribution of interference presence, while the "Other" category shows a slightly lower proportion of interference. This visualization provides an overview of how respondent effort and the presence of interference interact in the dataset.
 
 ```{r}
-#| label: fig-planes
-#| fig-cap: Relationship between wing length and width
+#| label: fig-ridgeline_interviewer_age
+#| fig-cap: "Ridgeline Plot of Interviewer Age by Question Clarification Level"
 #| echo: false
-#| warning: false
-#| message: false
+#| fig.width: 8
+#| fig.height: 6
+#| 
+ggplot(analysis_data, aes(x = interviewer_age, y = as.factor(question_clarification), fill = ..x..)) +
+  geom_density_ridges_gradient() +
+  scale_fill_viridis_c() +
+  labs(
+    title = "Ridgeline Plot of Interviewer Age by Question Clarification Level",
+    x = "Interviewer Age",
+    y = "Question Clarification Level"
+  ) +
+  theme_minimal()
 
-analysis_data <- read_csv(here::here("data/02-analysis_data/analysis_data.csv"))
 
-analysis_data |> 
-  ggplot(aes(x = width, y = length)) +
-  geom_point(alpha = 0.8) +
-  theme_minimal() +
-  labs(x = "Wing width (mm)",
-       y = "Wing length (mm)")
+
 ```
+- **@fig-ridgeline_interviewer_age** shows a ridgeline plot of interviewer age distributions across different levels of question clarification requests. 
+- The x-axis represents interviewer age, while the y-axis categorizes responses by clarification levels (1 to 5) and an "Other" group.
+- Each ridge represents the density distribution of interviewer age for a specific clarification level.
+- Lighter colors indicate higher densities within the corresponding age range.
 
-Talk way more about it. 
+### Key Observations:
+- Interviewers aged 40 to 50 are prominent in levels 4 and 5, showing higher densities in these groups.
+- Clarification levels 1 and 2 show a broader distribution of interviewer ages, with no distinct peak.
+- The "Other" category exhibits a more balanced spread of ages, without significant density concentrations.
 
-## Predictor variables
-
-Add graphs, tables and text.
-
-Use sub-sub-headings for each outcome variable and feel free to combine a few into one if they go together naturally.
+This visualization highlights the distribution of interviewer age across clarification levels and provides insights into age-related patterns in survey interactions.
 
 
+##  Justification
+
+The variables selected for this study were chosen carefully based on their importance in understanding the quality and reliability of survey responses. These variables are derived from the European Social Survey dataset and focus on key aspects of the interview process:
+
+- **Respondent Understanding (RESPONDENT_UNDERSTOOD_BINARY)**: Indicates whether the respondent fully comprehended the survey questions, categorized as *Understood* or *Not Understood*.
+- **Interview Conduct Method (INTERVIEW_CONDUCT_METHOD)**: Refers to the method of conducting the interview, including face-to-face interviews, telephone interviews, and self-administered surveys.
+- **Interference Factors**:
+  - **Child Interference (CHILD_INTERFERENCE)**: Documents whether interruptions occurred due to children during the interview (*Yes* or *No*).
+  - **Partner Interference (PARTNER_INTERFERENCE)**: Indicates whether the respondent’s partner interrupted the interview (*Yes* or *No*).
+- **Question Clarification (QUESTION_CLARIFICATION)**: Records whether the respondent asked for clarification on survey questions at any point.
+- **Respondent Reluctance (RESPONDENT_RELUCTANT)**: Reflects the respondent’s level of reluctance during the interview, categorized into levels from *Not Reluctant* to *Highly Reluctant*.
+- **Interviewer Age (INTERVIEWER_AGE)**: Specifies the age of the interviewer, which is included to examine possible influences of interviewer demographics.
+- **Interviewer Gender (INTERVIEWER_GENDER)**: Indicates the gender of the interviewer, recorded as *Male* or *Female*.
+
+Certain variables, such as **COUNTRY**, **SOCIOECONOMIC STATUS**, and **HOUSEHOLD COMPOSITION**, were excluded due to high levels of missing data or lesser relevance to the primary focus of the study. Similarly, variables with extensive categories were simplified to binary or grouped formats to enhance clarity and focus on essential distinctions.
+
+After filtering and processing, the final dataset consists of **9,743 observations** and **25 variables**, structured to support a clear and concise examination of the study’s research objectives.
 
 
 

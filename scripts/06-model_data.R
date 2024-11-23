@@ -7,7 +7,7 @@
 # Pre-requisites: The `tidyverse` package must be installed
 # Any other information needed? Make sure you are in the `The-Influence-of-Interview-Disruptions-on-Respondent-Data-Quality-in-Social-Surveys` rproj
 
-install.packages("loo")
+
 
 #### Workspace setup ####
 library(tidyverse)
