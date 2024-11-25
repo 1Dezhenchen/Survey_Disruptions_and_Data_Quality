@@ -26,6 +26,8 @@ library(bayesplot)
 library(ggridges)
 library(broom.mixed)
 library(kableExtra)
+library(car)
+library(loo)
 ```
 
 # Introduction
@@ -88,16 +90,17 @@ Different countries may implement localized adaptations in survey administration
 # Load in data
 analysis_data <- read_parquet(here::here("data/02-analysis_data/analysis_data.parquet"))
 
+
+# Random sampling if needed
 set.seed(131)
 sampled_data <- analysis_data %>%
   sample_n(5000)
 
-# Select important columns from both metadata and model variables
+# Select important variables from the model
 important_columns <- c(
-  "dataset_title", "ess_round", "edition_number", "production_date", "country", "respondent_id",
   "interview_conduct_method", "partner_interference", "child_interference",
   "parent_interference", "relative_interference", "non_relative_interference",
-  "interviewer_age", "interviewer_gender", "question_clarification",
+  "interviewer_age", "interviewer_gender", "country", "question_clarification",
   "respondent_reluctant", "respondent_tried_best"
 )
 
@@ -109,12 +112,13 @@ analysis_data_selected <- sampled_data %>%
 analysis_data_selected |>
   head(10) |>  # Limit to 10 rows to ensure readability
   kable(booktabs = TRUE, align = "c", col.names = c(
-    "Dataset Title", "ESS Round", "Edition Number", "Production Date", "Country", "Respondent ID",
-    "Interview Method", "Partner Interference", "Child Interference", "Parent Interference",
-    "Relative Interference", "Non-relative Interference", "Interviewer Age",
-    "Interviewer Gender", "Question Clarification", "Respondent Reluctant", "Respondent Tried Best"
+    "Interview Method", "Partner Interference", "Child Interference",
+    "Parent Interference", "Relative Interference", "Non-relative Interference",
+    "Interviewer Age", "Interviewer Gender", "Country",
+    "Question Clarification", "Respondent Reluctant", "Respondent Tried Best"
   )) %>%
   kable_styling(full_width = FALSE)
+
 
 ```
 
@@ -191,11 +195,40 @@ ggplot(filtered_data, aes(x = interviewer_age, fill = country, color = country))
 From the plot, we can observe that certain countries, such as Germany and Austria, have a higher concentration of interviewers in specific age ranges, while others, like Ireland, show a more dispersed distribution. This visualization provides an overview of the age composition of interviewers across these countries, offering useful context for understanding potential differences in survey implementation.
 
 ```{r}
-#| label: fig-interference_frequency
-#| fig-cap: "Bar Plot of Interference Frequency by Respondent Tried Best"
+#| label: fig-response_understanding_effort_level
+#| fig-cap: "Bar Plot of Response Understanding by Respondent Effort Level"
 #| echo: false
 #| fig.width: 8
 #| fig.height: 6
+
+ggplot(analysis_data, aes(x = respondent_tried_best, fill = respondent_understood_binary)) +
+  geom_bar(position = "fill") +
+  scale_fill_manual(values = c("#619CFF", "#F8766D")) +
+  labs(
+    title = "Bar Plot of Response Understanding by Respondent Tried Best",
+    x = "Respondent Tried Best",
+    y = "Proportion",
+    fill = "Response Understanding"
+  ) +
+  theme_minimal()
+
+
+
+```
+
+@fig-response_understanding_effort_level Figure 2 illustrates the relationship between respondents' effort levels, as represented by "Respondent Tried Best," and their understanding of survey questions. The x-axis indicates different levels of effort, ranging from 1 (low effort) to 5 (high effort), along with an additional "Other" category. The y-axis shows the proportion of respondents who either understood or did not understand the survey questions.
+
+From the bar plot, it is apparent that understanding levels vary slightly across different effort categories. In general, as the effort level increases, the proportion of respondents who understood the questions tends to be higher. Notably, effort levels 1, 2, and 3 exhibit a relatively higher portion of respondents who did not understand compared to effort levels 4 and 5, which show a more balanced distribution. The "Other" category presents a distinct pattern, differing slightly from the other effort levels. This visualization provides insight into how the level of effort during interviews corresponds to the respondents' comprehension of the questions asked.
+
+
+```{r}
+#| label: fig-interference_frequency
+#| fig-cap: "Bar Plot of Interference Frequency by Respondent Tried Best"
+#| echo: false
+#| warning: false
+#| fig.width: 8
+#| fig.height: 6
+#| 
 
 ggplot(analysis_data, aes(x = respondent_tried_best, fill = as.factor(interference_present))) +
   geom_bar(position = "fill") +
@@ -210,37 +243,17 @@ ggplot(analysis_data, aes(x = respondent_tried_best, fill = as.factor(interferen
 
 
 
-```
-
-@fig-interference_frequency illustrates the frequency of interference during interviews across different levels of respondents’ effort, as measured by the variable "Respondent Tried Best." The bar plot shows the proportion of interviews with and without interference for each effort level, ranging from 1 (low effort) to 5 (high effort) and an additional "Other" category.
-
-From the plot, we can observe that interference is present across all effort levels, though its proportion varies slightly. Higher levels of effort (e.g., 4 and 5) tend to have a similar distribution of interference presence, while the "Other" category shows a slightly lower proportion of interference. This visualization provides an overview of how respondent effort and the presence of interference interact in the dataset.
-
-```{r}
-#| label: fig-ridgeline_interviewer_age
-#| fig-cap: "Ridgeline Plot of Interviewer Age by Question Clarification Level"
-#| echo: false
-#| fig.width: 8
-#| fig.height: 6
-#| 
-ggplot(analysis_data, aes(x = interviewer_age, y = as.factor(question_clarification), fill = ..x..)) +
-  geom_density_ridges_gradient() +
-  scale_fill_viridis_c() +
-  labs(
-    title = "Ridgeline Plot of Interviewer Age by Question Clarification Level",
-    x = "Interviewer Age",
-    y = "Question Clarification Level"
-  ) +
-  theme_minimal()
-
 
 
 ```
 
--   @fig-ridgeline_interviewer_age shows a ridgeline plot of interviewer age distributions across different levels of question clarification requests.
--   The x-axis represents interviewer age, while the y-axis categorizes responses by clarification levels (1 to 5) and an "Other" group.
--   Each ridge represents the density distribution of interviewer age for a specific clarification level.
--   Lighter colors indicate higher densities within the corresponding age range.
+@fig-interference_frequency illustrates the frequency of interference during interviews across different levels of respondents' effort, as measured by the variable "Respondent Tried Best."
+
+The bar plot shows the proportion of interviews with and without interference for each effort level, ranging from 1 (low effort) to 5 (high effort), along with an additional "Other" category.
+
+From the plot, we can observe that interference is present across all effort levels, though its proportion varies slightly. Higher levels of effort (e.g., 4 and 5) tend to have a similar distribution of interference presence, while the "Other" category shows a slightly lower proportion of interference.
+
+This visualization provides an overview of how respondent effort and the presence of interference interact in the dataset.
 
 ### Key Observations:
 
@@ -483,23 +496,43 @@ interviewer_age has an estimated effect close to zero with a broad credible inte
 
 These findings highlight the importance of considering the type of interference during interviews and specific characteristics of interviewers. It is evident that some types of disturbances and interview formats could significantly affect the reliability of collected data. By mitigating negative factors such as partner interference and selecting appropriate interview methods, the quality of survey data can be substantially improved, leading to more reliable conclusions in social survey research.
 
-Copy code
-
 # Discussion
 
-## First discussion point {#sec-first-point}
+This analysis employed a Bayesian logistic regression model to investigate factors influencing respondents' comprehension during interviews. By incorporating various types of interference, interview methods, and respondent characteristics, the model elucidates how these variables impact understanding during social survey interviews.
 
-If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this.
+## Factors Affecting Response Comprehension
 
-## Second discussion point
+The model analysis reveals that different types of interference significantly affect respondents' comprehension during interviews. Notably, partner and child interference have a negative impact on understanding. For example, the coefficient for partner interference is significantly negative (mean = -0.6), suggesting that the presence of a partner may hinder a respondent's full comprehension of the questions. This finding aligns with previous research, indicating that social pressure or disturbances from nearby individuals can negatively impact respondents' attention during surveys.
 
-Please don't use these as sub-heading labels - change them to be what your point actually is.
+In contrast, interviewer characteristics, such as gender, show little effect on comprehension. This suggests that while environmental and relational interference plays a crucial role, interviewer attributes do not significantly influence respondents' comprehension in the context of this study.
 
-## Third discussion point
+## Implications for Managing Interview Interference**
 
-## Weaknesses and next steps
+The strategic implication of these findings is that managing the interview environment is crucial for improving data quality. Since partner and child interference are associated with a reduced likelihood of comprehension, measures should be considered to minimize such disruptions. This might include conducting interviews in a more private setting or explicitly instructing respondents to minimize interruptions during the interview.
 
-Weaknesses and next steps should also be included.
+Variables related to the interview method also show significant impact. The coefficient for “interview_conduct_method3” is positive, indicating that certain specific methods, possibly involving higher levels of interaction or explanation, contribute to improved comprehension. This implies that training interviewers to adopt methods that emphasize clarity and engagement could enhance respondents' understanding, even in the presence of interference.
+
+## Limitations and Areas for Improvement**
+
+A key limitation of the model is the generalizability of its findings, particularly regarding different population groups. The current dataset may not capture all cultural or socioeconomic factors that could influence comprehension. For instance, while country-level effects are included, many of these effects are either negative or negligible, suggesting that unmeasured factors may explain differences between regions.
+
+Additionally, the model's predictive performance, assessed through the Bayesian R-squared value, is moderate (mean R² around 0.32). This indicates that while the model accounts for some variability in response comprehension, a substantial amount remains unexplained. Future research could incorporate additional variables, such as respondents' education levels or prior survey experience, to enhance model fit and explanatory power.
+
+## Future Research Directions**
+
+Building on these findings, future research could explore more granular aspects of interference, such as the intensity or duration of disruptions. Understanding whether brief interruptions have a different effect compared to prolonged interference could help develop more precise guidelines for survey management.
+
+Further research could also examine interaction effects between variables, such as how partner interference affects respondents with varying levels of willingness to participate. This could unveil more targeted strategies to improve survey conditions, ultimately leading to higher data reliability.
+
+## Practical Insights for Survey Management**
+
+The results of this analysis underscore the importance of optimizing survey conditions to enhance respondent comprehension. Minimizing interference and adopting effective interview methods can significantly improve the quality of collected data. Survey administrators might consider providing pre-interview guidance to help respondents reduce disruptions and training interviewers in techniques proven to enhance comprehension.
+
+The significance of certain variables, such as partner interference, also highlights the complexity of social dynamics during surveys. Addressing these dynamics is crucial for ensuring the accuracy of survey results, which directly impacts the validity of conclusions drawn from the data.
+
+Overall, the study provides actionable insights into how survey administrators can better structure interview conditions to mitigate interference and enhance respondent understanding, thereby improving the reliability and validity of survey data.
+
+
 
 \newpage
 
@@ -524,5 +557,112 @@ In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. Th
 @fig-stanareyouokay-2 is a Rhat plot. It shows... This suggests...
 
 \newpage
+
+## Prediction
+```{r}
+#| echo: false
+#| warning: false
+analysis_data_train <- read_parquet(here::here("data/02-analysis_data/train_data.parquet"))
+analysis_data_test <- read_parquet(here::here("data/02-analysis_data/test_data.parquet"))
+factor_vars <- c("interview_conduct_method", "partner_interference", "child_interference",
+                 "parent_interference", "relative_interference", "non_relative_interference",
+                 "country", "interviewer_gender", "question_clarification", "respondent_reluctant",
+                 "respondent_tried_best")
+
+# Iterate through factor variables and set the factor levels in test data to be consistent with train data
+for (var in factor_vars) {
+  if (is.factor(analysis_data_train[[var]])) {
+    # Set factor levels in test data to match those in train data
+    analysis_data_test[[var]] <- factor(analysis_data_test[[var]], levels = levels(analysis_data_train[[var]]))
+  }
+}
+
+# Predict probabilities and convert predicted_class to "Understood" and "Not_understood"
+predicted_prob <- predict(first_model, newdata = analysis_data_test, type = "response")
+analysis_data_test$predicted_class <- ifelse(predicted_prob > 0.5, "Understood", "Not_understood")
+
+# Convert predicted_class and respondent_understood_binary to factors with consistent levels
+analysis_data_test$predicted_class <- factor(analysis_data_test$predicted_class, levels = c("Not_understood", "Understood"))
+analysis_data_test$respondent_understood_binary <- factor(analysis_data_test$respondent_understood_binary, levels = c("Not_understood", "Understood"))
+
+# Display table of prediction results
+table(analysis_data_test$predicted_class)
+table(analysis_data_test$respondent_understood_binary)
+
+# Import caret library and calculate confusion matrix
+library(caret)
+
+confusion_matrix <- confusionMatrix(
+  analysis_data_test$predicted_class,
+  analysis_data_test$respondent_understood_binary
+)
+
+# Print the confusion matrix
+print(confusion_matrix)
+
+scatter_data <- data.frame(
+  Actual = analysis_data_test$respondent_understood_binary,
+  Predicted = analysis_data_test$predicted_class
+)
+
+
+ggplot(scatter_data, aes(x = Actual, y = Predicted)) +
+  geom_jitter(width = 0.2, height = 0.2, alpha = 0.5, color = "blue") +
+  labs(
+    title = "Scatter Plot of Actual vs Predicted Values",
+    x = "Actual Response Understanding",
+    y = "Predicted Response Understanding"
+  ) +
+  theme_minimal()
+
+
+
+```
+## Validation
+```{r}
+
+pp_check(first_model) +
+  theme_classic() +
+  theme(legend.position = "bottom")
+vif(first_model)
+
+
+residuals <- residuals(first_model, type = "response")
+hist(residuals, main = "Residual Histogram", xlab = "Residuals")
+
+r2_values <- bayes_R2(first_model)
+r2_df <- data.frame(Index = 1:length(r2_values), R2 = r2_values)
+
+ggplot(r2_df, aes(x = Index, y = R2)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(title = "Bayesian R^2 Metrics for first_model Observations", x = "Observation Index", y = "R^2 Value") +
+  theme_minimal()
+
+
+
+
+# Perform LOO cross-validation and assign to loo_results
+loo_results <- loo(first_model)
+# Extract Pareto k values from loo results and plot
+pareto_k <- loo_results$diagnostics$pareto_k
+pareto_k_df <- data.frame(Index = 1:length(pareto_k), Pareto_k = pareto_k)
+
+ggplot(pareto_k_df, aes(x = Index, y = Pareto_k)) +
+  geom_bar(stat = "identity", fill = "orange") +
+  geom_hline(yintercept = 0.7, linetype = "dashed", color = "red") +
+  labs(title = "Pareto k Diagnostic Values", x = "Observation Index", y = "Pareto k Value") +
+  theme_minimal()
+
+
+
+loo_df <- data.frame(Observation = 1:length(loo_results$pointwise[,"elpd_loo"]),
+                     ELPD_LOO = loo_results$pointwise[,"elpd_loo"])
+
+ggplot(loo_df, aes(x = Observation, y = ELPD_LOO)) +
+  geom_point(color = "darkgreen") +
+  geom_smooth(method = "loess", color = "red", se = FALSE) +
+  labs(title = "Leave-One-Out Cross Validation (ELPD_LOO)", x = "Observation Index", y = "ELPD_LOO") +
+  theme_classic()
+```
 
 # References
