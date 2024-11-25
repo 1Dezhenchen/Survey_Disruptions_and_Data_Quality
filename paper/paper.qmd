@@ -24,10 +24,12 @@ library(tidyverse)
 library(ggplot2)
 library(bayesplot)
 library(ggridges)
+library(broom.mixed)
+library(kableExtra)
 ```
 
-
 # Introduction
+
 In recent years, the quality of social survey data has become an important topic of inquiry, especially with regard to how different disruptions impact respondent behavior. Several studies have contributed to this body of knowledge by focusing on factors that may affect the reliability of survey responses. Groves et al. (2009) examined the role of interviewer characteristics—such as experience and demeanor—in shaping the quality of responses through a multi-level modeling approach. In another key study, Couper and de Leeuw (2003) investigated how different modes of conducting interviews, like in-person versus telephone, influenced the comfort and attentiveness of respondents. Fowler and Mangione (1990) took a different approach by analyzing observational data to assess the impact of third-party presence during interviews. Although these works laid a valuable foundation for understanding data quality, there remains a gap in systematically analyzing the distinct effects of various kinds of disruptions, such as familial or environmental interference, on respondent understanding and response accuracy.
 
 This study endeavors to address these overlooked aspects by closely examining the role of interview disruptions on data quality in a major social survey. Specifically, our analysis explores the influence of different types of interferences—including interruptions from partners, children, and other family members—on respondents' comprehension and engagement during the interview process. We employed a Bayesian logistic regression model utilizing the rstanarm package in R to capture these influences. The model incorporates a range of predictor variables, such as interviewer characteristics (age and gender), different methods of interview administration, and family-related interferences. During data preparation, the categorical levels of several predictor variables were simplified, excluding the 'country' variable, to ensure interpretability and to streamline model estimation. We also included indicators of respondent attitudes, such as whether questions were clarified during the interview or if reluctance to answer was observed, aiming for a more comprehensive understanding of respondent engagement.
@@ -38,10 +40,8 @@ Beyond merely quantifying these effects, our study provides deeper implications 
 
 The remainder of this paper is organized to present a comprehensive exploration of these topics. Section 2 provides a detailed overview of the dataset, focusing on the different variables and their role in assessing data quality. It also outlines the preprocessing steps taken, including data cleaning and the recoding of variables. Section 3 introduces the Bayesian logistic regression methodology, explaining the statistical approach and justifying the selection of priors for the analysis. In Section 4, we present the empirical findings, including parameter estimates and an interpretation of the relationships uncovered by the model. Section 5 discusses the practical implications of these findings, emphasizing the improvements needed in interviewer training and the strategies for reducing respondent interference. Finally, Section 6 summarizes the key contributions of this research, outlines the limitations, and suggests avenues for future work—particularly concerning the integration of new data collection technologies and adaptive survey designs aimed at mitigating the impact of disruptions on respondent data quality.
 
-
-
-
 # Estimand
+
 This study aims to evaluate the factors that influence the quality and reliability of survey responses during interview disruptions in social surveys. By analyzing variables such as different types of interferences (partner, child, parent, and relative interferences), interview methodologies, the demographic characteristics of interviewers (such as age and gender), the language of the questionnaire, and respondent behaviors like reluctance, clarification requests, and effort put into answering, this research seeks to understand how these elements affect the consistency and clarity of responses. The core goal is to determine the impact of these factors on respondent understanding and data reliability, thereby providing insights into improving survey methods and reducing biases in data collection.
 
 # Data {#sec-data}
@@ -54,29 +54,30 @@ To ensure the reliability of the analysis, we filtered the data to exclude incom
 
 The following R packages were employed to streamline the data analysis workflow:
 
-- **tidyverse** (Wickham et al. 2021): Used for efficient data manipulation, cleaning, and transformation. It includes:
-- **dplyr** (Wickham, François, et al. 2021): For summarizing and managing complex datasets.
-- **ggplot2** (Wickham 2021): For creating powerful and flexible visualizations.
-  
-- **rstanarm** (Team 2021): Facilitated the implementation of Bayesian models, enabling straightforward regression modeling using Stan.
+-   **tidyverse** (Wickham et al. 2021): Used for efficient data manipulation, cleaning, and transformation. It includes:
 
-- **arrow** (Apache Arrow 2021): Employed for efficiently reading and writing large datasets, enhancing data handling capabilities across systems.
+-   **dplyr** (Wickham, François, et al. 2021): For summarizing and managing complex datasets.
 
-- **car** (Fox et al. 2021): Provided functions for regression diagnostics and other statistical analyses, particularly useful for checking assumptions and model validity.
+-   **ggplot2** (Wickham 2021): For creating powerful and flexible visualizations.
 
-- **brms** (Bürkner 2021): A package for Bayesian regression modeling, which was used to implement more complex modeling approaches for the data.
+-   **rstanarm** (Team 2021): Facilitated the implementation of Bayesian models, enabling straightforward regression modeling using Stan.
 
-- **rsample** (Kuhn 2021): Used for creating resampling datasets, ensuring robust model validation by facilitating cross-validation and bootstrapping techniques.
+-   **arrow** (Apache Arrow 2021): Employed for efficiently reading and writing large datasets, enhancing data handling capabilities across systems.
 
-- **janitor** (Firke 2021): Simplified data cleaning processes by helping manage variable names and data structures, making raw data easier to handle.
+-   **car** (Fox et al. 2021): Provided functions for regression diagnostics and other statistical analyses, particularly useful for checking assumptions and model validity.
 
-- **GGally** (Schloerke et al. 2021): Used to enhance ggplot2 visualizations by providing additional functions for correlation plots and pairwise visualizations, which are useful for exploratory data analysis.
-This study aims to provide practical insights into how various disruptions affect data quality in survey settings, helping to optimize survey design and execution in the future.
-## Measurement
-	
+-   **brms** (Bürkner 2021): A package for Bayesian regression modeling, which was used to implement more complex modeling approaches for the data.
+
+-   **rsample** (Kuhn 2021): Used for creating resampling datasets, ensuring robust model validation by facilitating cross-validation and bootstrapping techniques.
+
+-   **janitor** (Firke 2021): Simplified data cleaning processes by helping manage variable names and data structures, making raw data easier to handle.
+
+-   **GGally** (Schloerke et al. 2021): Used to enhance ggplot2 visualizations by providing additional functions for correlation plots and pairwise visualizations, which are useful for exploratory data analysis. This study aims to provide practical insights into how various disruptions affect data quality in survey settings, helping to optimize survey design and execution in the future. \## Measurement
+
 The data for this study is sourced from the European Social Survey (ESS), which collects information on societal attitudes and behaviors across multiple European countries. The dataset focuses on respondents’ understanding of survey questions, their cooperation levels, and the impact of environmental factors such as interruptions during interviews. All responses are collected using standardized methods to ensure comparability across countries.
 
 Different countries may implement localized adaptations in survey administration, which could influence response behaviors. To account for this, country-level metadata is included, allowing for the analysis of cross-national variations.
+
 ```{r}
 #| warning: false
 #| message: false
@@ -87,56 +88,83 @@ Different countries may implement localized adaptations in survey administration
 # Load in data
 analysis_data <- read_parquet(here::here("data/02-analysis_data/analysis_data.parquet"))
 
-# Random sampling if needed
 set.seed(131)
-sampled_data <-analysis_data %>%
+sampled_data <- analysis_data %>%
   sample_n(5000)
 
-analysis_data |>
-  head() |>
-  kable(booktabs = TRUE, align = "c")
+# Select important columns from both metadata and model variables
+important_columns <- c(
+  "dataset_title", "ess_round", "edition_number", "production_date", "country", "respondent_id",
+  "interview_conduct_method", "partner_interference", "child_interference",
+  "parent_interference", "relative_interference", "non_relative_interference",
+  "interviewer_age", "interviewer_gender", "question_clarification",
+  "respondent_reluctant", "respondent_tried_best"
+)
+
+# Filter data to only include important columns
+analysis_data_selected <- sampled_data %>%
+  select(all_of(important_columns))
+
+# Display the selected data with better column alignment
+analysis_data_selected |>
+  head(10) |>  # Limit to 10 rows to ensure readability
+  kable(booktabs = TRUE, align = "c", col.names = c(
+    "Dataset Title", "ESS Round", "Edition Number", "Production Date", "Country", "Respondent ID",
+    "Interview Method", "Partner Interference", "Child Interference", "Parent Interference",
+    "Relative Interference", "Non-relative Interference", "Interviewer Age",
+    "Interviewer Gender", "Question Clarification", "Respondent Reluctant", "Respondent Tried Best"
+  )) %>%
+  kable_styling(full_width = FALSE)
+
 ```
 
 ## Outcome variables
 
 Our analysis focuses on the following variables, with a specific focus on **respondent_understood_binary** as the dependent variable:
 
-- **respondent_understood_binary**: A binary variable indicating whether the respondent fully understood the survey questions. It was recoded as:
-  - *Understood*: Respondents who provided clear and accurate answers, indicating full comprehension of the questions.
-  - *Not understood*: Respondents who exhibited difficulties in understanding the questions, resulting in incomplete or unclear responses.
+-   **respondent_understood_binary**: A binary variable indicating whether the respondent fully understood the survey questions. It was recoded as:
 
-- **interview_conduct_method**: The method by which the interview was conducted, with the following possible categories:
-  - *Face-to-face*: In-person interviews conducted by the surveyor.
-  - *Telephone*: Interviews conducted remotely via phone.
-  - *Self-administered*: Surveys completed by respondents themselves without direct interaction with a surveyor.
+    -   *Understood*: Respondents who provided clear and accurate answers, indicating full comprehension of the questions.
+    -   *Not understood*: Respondents who exhibited difficulties in understanding the questions, resulting in incomplete or unclear responses.
 
-- **child_interference**: Indicates whether interruptions by children occurred during the interview, with binary values:
-  - *Yes*: The interview was interrupted by children.
-  - *No*: No interruptions by children were recorded.
+-   **interview_conduct_method**: The method by which the interview was conducted, with the following possible categories:
 
-- **partner_interference**: Indicates whether interruptions by partners occurred during the interview, with binary values:
-  - *Yes*: The interview was interrupted by the respondent's partner.
-  - *No*: No interruptions by the partner were recorded.
+    -   *Face-to-face*: In-person interviews conducted by the surveyor.
+    -   *Telephone*: Interviews conducted remotely via phone.
+    -   *Self-administered*: Surveys completed by respondents themselves without direct interaction with a surveyor.
 
-- **question_clarification**: Tracks whether the respondent requested clarification on any survey questions. The variable includes:
-  - *Yes*: The respondent asked for clarification.
-  - *No*: The respondent did not ask for clarification.
+-   **child_interference**: Indicates whether interruptions by children occurred during the interview, with binary values:
 
-- **respondent_reluctant**: Captures the level of reluctance exhibited by the respondent during the interview process. Possible levels include:
-  - *Not reluctant*: The respondent showed no signs of hesitation.
-  - *Slightly reluctant*: The respondent exhibited mild hesitation.
-  - *Highly reluctant*: The respondent was clearly unwilling to engage with the survey.
+    -   *Yes*: The interview was interrupted by children.
+    -   *No*: No interruptions by children were recorded.
 
-- **interviewer_age**: The age of the interviewer, used to explore whether interviewer demographics impact response quality.
+-   **partner_interference**: Indicates whether interruptions by partners occurred during the interview, with binary values:
 
-- **interviewer_gender**: The gender of the interviewer, categorized as:
-  - *Male*: Interviews conducted by male interviewers.
-  - *Female*: Interviews conducted by female interviewers.
+    -   *Yes*: The interview was interrupted by the respondent's partner.
+    -   *No*: No interruptions by the partner were recorded.
 
-These variables were chosen for their potential influence on response quality and survey reliability, allowing for a comprehensive analysis of disruptions and other contextual factors. 
+-   **question_clarification**: Tracks whether the respondent requested clarification on any survey questions. The variable includes:
 
+    -   *Yes*: The respondent asked for clarification.
+    -   *No*: The respondent did not ask for clarification.
+
+-   **respondent_reluctant**: Captures the level of reluctance exhibited by the respondent during the interview process. Possible levels include:
+
+    -   *Not reluctant*: The respondent showed no signs of hesitation.
+    -   *Slightly reluctant*: The respondent exhibited mild hesitation.
+    -   *Highly reluctant*: The respondent was clearly unwilling to engage with the survey.
+
+-   **interviewer_age**: The age of the interviewer, used to explore whether interviewer demographics impact response quality.
+
+-   **interviewer_gender**: The gender of the interviewer, categorized as:
+
+    -   *Male*: Interviews conducted by male interviewers.
+    -   *Female*: Interviews conducted by female interviewers.
+
+These variables were chosen for their potential influence on response quality and survey reliability, allowing for a comprehensive analysis of disruptions and other contextual factors.
 
 Detailed insights into the distribution of interviewer age across different countries are visualized in Figure 1, which presents the density plot of interviewer age for the top five countries in the dataset.
+
 ```{r}
 #| label: fig-interviewer_age_density
 #| fig-cap: "Density plot of Interviewer Age by Top 5 Countries"
@@ -161,6 +189,7 @@ ggplot(filtered_data, aes(x = interviewer_age, fill = country, color = country))
 @fig-interviewer_age_density illustrates the distribution of interviewer ages across the top five countries in the dataset. The density plot highlights the variation in age demographics among interviewers from different countries, including Austria (AT), Germany (DE), Finland (FI), Great Britain (GB), and Ireland (IE).
 
 From the plot, we can observe that certain countries, such as Germany and Austria, have a higher concentration of interviewers in specific age ranges, while others, like Ireland, show a more dispersed distribution. This visualization provides an overview of the age composition of interviewers across these countries, offering useful context for understanding potential differences in survey implementation.
+
 ```{r}
 #| label: fig-interference_frequency
 #| fig-cap: "Bar Plot of Interference Frequency by Respondent Tried Best"
@@ -182,6 +211,7 @@ ggplot(analysis_data, aes(x = respondent_tried_best, fill = as.factor(interferen
 
 
 ```
+
 @fig-interference_frequency illustrates the frequency of interference during interviews across different levels of respondents’ effort, as measured by the variable "Respondent Tried Best." The bar plot shows the proportion of interviews with and without interference for each effort level, ranging from 1 (low effort) to 5 (high effort) and an additional "Other" category.
 
 From the plot, we can observe that interference is present across all effort levels, though its proportion varies slightly. Higher levels of effort (e.g., 4 and 5) tend to have a similar distribution of interference presence, while the "Other" category shows a slightly lower proportion of interference. This visualization provides an overview of how respondent effort and the presence of interference interact in the dataset.
@@ -206,111 +236,260 @@ ggplot(analysis_data, aes(x = interviewer_age, y = as.factor(question_clarificat
 
 
 ```
-- **@fig-ridgeline_interviewer_age** shows a ridgeline plot of interviewer age distributions across different levels of question clarification requests. 
-- The x-axis represents interviewer age, while the y-axis categorizes responses by clarification levels (1 to 5) and an "Other" group.
-- Each ridge represents the density distribution of interviewer age for a specific clarification level.
-- Lighter colors indicate higher densities within the corresponding age range.
+
+-   @fig-ridgeline_interviewer_age shows a ridgeline plot of interviewer age distributions across different levels of question clarification requests.
+-   The x-axis represents interviewer age, while the y-axis categorizes responses by clarification levels (1 to 5) and an "Other" group.
+-   Each ridge represents the density distribution of interviewer age for a specific clarification level.
+-   Lighter colors indicate higher densities within the corresponding age range.
 
 ### Key Observations:
-- Interviewers aged 40 to 50 are prominent in levels 4 and 5, showing higher densities in these groups.
-- Clarification levels 1 and 2 show a broader distribution of interviewer ages, with no distinct peak.
-- The "Other" category exhibits a more balanced spread of ages, without significant density concentrations.
+
+-   Interviewers aged 40 to 50 are prominent in levels 4 and 5, showing higher densities in these groups.
+-   Clarification levels 1 and 2 show a broader distribution of interviewer ages, with no distinct peak.
+-   The "Other" category exhibits a more balanced spread of ages, without significant density concentrations.
 
 This visualization highlights the distribution of interviewer age across clarification levels and provides insights into age-related patterns in survey interactions.
 
-
-##  Justification
+## Justification
 
 The variables selected for this study were chosen carefully based on their importance in understanding the quality and reliability of survey responses. These variables are derived from the European Social Survey dataset and focus on key aspects of the interview process:
 
-- **Respondent Understanding (RESPONDENT_UNDERSTOOD_BINARY)**: Indicates whether the respondent fully comprehended the survey questions, categorized as *Understood* or *Not Understood*.
-- **Interview Conduct Method (INTERVIEW_CONDUCT_METHOD)**: Refers to the method of conducting the interview, including face-to-face interviews, telephone interviews, and self-administered surveys.
-- **Interference Factors**:
-  - **Child Interference (CHILD_INTERFERENCE)**: Documents whether interruptions occurred due to children during the interview (*Yes* or *No*).
-  - **Partner Interference (PARTNER_INTERFERENCE)**: Indicates whether the respondent’s partner interrupted the interview (*Yes* or *No*).
-- **Question Clarification (QUESTION_CLARIFICATION)**: Records whether the respondent asked for clarification on survey questions at any point.
-- **Respondent Reluctance (RESPONDENT_RELUCTANT)**: Reflects the respondent’s level of reluctance during the interview, categorized into levels from *Not Reluctant* to *Highly Reluctant*.
-- **Interviewer Age (INTERVIEWER_AGE)**: Specifies the age of the interviewer, which is included to examine possible influences of interviewer demographics.
-- **Interviewer Gender (INTERVIEWER_GENDER)**: Indicates the gender of the interviewer, recorded as *Male* or *Female*.
+-   **Respondent Understanding (RESPONDENT_UNDERSTOOD_BINARY)**: Indicates whether the respondent fully comprehended the survey questions, categorized as *Understood* or *Not Understood*.
+-   **Interview Conduct Method (INTERVIEW_CONDUCT_METHOD)**: Refers to the method of conducting the interview, including face-to-face interviews, telephone interviews, and self-administered surveys.
+-   **Interference Factors**:
+    -   **Child Interference (CHILD_INTERFERENCE)**: Documents whether interruptions occurred due to children during the interview (*Yes* or *No*).
+    -   **Partner Interference (PARTNER_INTERFERENCE)**: Indicates whether the respondent’s partner interrupted the interview (*Yes* or *No*).
+-   **Question Clarification (QUESTION_CLARIFICATION)**: Records whether the respondent asked for clarification on survey questions at any point.
+-   **Respondent Reluctance (RESPONDENT_RELUCTANT)**: Reflects the respondent’s level of reluctance during the interview, categorized into levels from *Not Reluctant* to *Highly Reluctant*.
+-   **Interviewer Age (INTERVIEWER_AGE)**: Specifies the age of the interviewer, which is included to examine possible influences of interviewer demographics.
+-   **Interviewer Gender (INTERVIEWER_GENDER)**: Indicates the gender of the interviewer, recorded as *Male* or *Female*.
 
 Certain variables, such as **COUNTRY**, **SOCIOECONOMIC STATUS**, and **HOUSEHOLD COMPOSITION**, were excluded due to high levels of missing data or lesser relevance to the primary focus of the study. Similarly, variables with extensive categories were simplified to binary or grouped formats to enhance clarity and focus on essential distinctions.
 
 After filtering and processing, the final dataset consists of **9,743 observations** and **25 variables**, structured to support a clear and concise examination of the study’s research objectives.
 
+### Model Set-up
 
+Let $y_i$be the ordered categorical variable representing whether the respondent fully understood the survey questions for the $i$ -th interview. The predictors in the model include:
 
+-   $\beta_1$: The coefficient for **interview_conduct_method**, representing the type of interview conducted. This variable includes different categories such as:
 
+    -   Method 2
+    -   Method 3
+    -   Method 9
+    -   (other possible interview methods)
 
+-   $\beta_2$: The coefficient for **partner_interference**, representing different levels of interference by the respondent's partner. Categories include:
 
-# Model
+    -   Partner Interference Level 1
+    -   Partner Interference Level 2
+    -   (other possible levels of interference)
 
-The goal of our modelling strategy is twofold. Firstly,...
+-   $\beta_3$: The coefficient for **child_interference**, indicating different levels of interference by children during the interview. This variable includes:
 
-Here we briefly describe the Bayesian analysis model used to investigate... Background details and diagnostics are included in [Appendix -@sec-model-details].
+    -   Child Interference Level 1
+    -   Child Interference Level 2
+    -   (other possible levels of interference)
 
-## Model set-up
+-   $\beta_4$: The coefficient for **parent_interference**, indicating different levels of interference by the respondent's parents.
 
-Define $y_i$ as the number of seconds that the plane remained aloft. Then $\beta_i$ is the wing width and $\gamma_i$ is the wing length, both measured in millimeters.  
+-   $\beta_5$: The coefficient for **relative_interference**, representing interference by other relatives.
 
-\begin{align} 
-y_i|\mu_i, \sigma &\sim \mbox{Normal}(\mu_i, \sigma) \\
-\mu_i &= \alpha + \beta_i + \gamma_i\\
-\alpha &\sim \mbox{Normal}(0, 2.5) \\
-\beta &\sim \mbox{Normal}(0, 2.5) \\
-\gamma &\sim \mbox{Normal}(0, 2.5) \\
-\sigma &\sim \mbox{Exponential}(1)
+-   $\beta_6$: The coefficient for **non_relative_interference**, indicating whether interference was caused by non-relatives.
+
+-   $\beta_7$: The coefficient for **interviewer_age**, which is a continuous variable representing the age of the interviewer.
+
+-   $\beta_8$: The coefficient for **interviewer_gender**, indicating the gender of the interviewer:
+
+    -   Male
+    -   Female
+
+-   $\beta_9$: The coefficient for **country** (as a factor), representing the country where the interview took place. The variable includes multiple countries.
+
+-   $\beta_{10}$: The coefficient for **question_clarification**, indicating whether the respondent requested clarification during the interview. It includes multiple levels, such as:
+
+    -   Clarification Level 2
+    -   Clarification Level 3
+    -   Clarification Level 4
+    -   Clarification Level 5
+    -   (other possible levels of clarification)
+
+-   $\beta_{11}$: The coefficient for **respondent_reluctant**, representing the level of reluctance shown by the respondent. Categories include:
+
+    -   Reluctant Level 2
+    -   Reluctant Level 3
+    -   Reluctant Level 4
+    -   Reluctant Level 5
+    -   (other possible levels of reluctance)
+
+-   $\beta_{12}$: The coefficient for **respondent_tried_best**, indicating whether the respondent tried their best to provide accurate answers during the survey. Categories include:
+
+    -   Tried Best Level 2
+    -   Tried Best Level 3
+    -   Tried Best Level 4
+    -   Tried Best Level 5
+    -   (other possible levels of effort)
+
+Each coefficient $\beta_j$ represents the effect of the $j$-th predictor on the log-odds of the respondent understanding the survey questions.
+
+-   $\eta_i$: The linear predictor or log-odds for the $i$-th observation, calculated by combining the intercept and the coefficients for each predictor variable.
+
+-   $\kappa$: The set of thresholds (or cutpoints) that define the boundaries between the ordered categories of the outcome variable. In the ordered logistic regression model, these thresholds determine the ranges of $\eta_i$ values corresponding to each category of respondent understanding. The model estimates separate $\kappa$ values for each boundary between the ordered categories.
+
+The model is specified as follows for ordered logistic regression:\begin{align}
+y_i &\sim \text{OrderedLogistic}(\eta_i, \kappa) \\
+\eta_i &= \beta_0 + \beta_{\text{interview\_conduct\_method}} \times \text{interview\_conduct\_method}_i \notag \\
+       &\quad + \beta_{\text{partner\_interference}} \times \text{partner\_interference}_i \notag \\
+       &\quad + \beta_{\text{child\_interference}} \times \text{child\_interference}_i 
+       + \beta_{\text{parent\_interference}} \times \text{parent\_interference}_i \notag \\
+       &\quad + \beta_{\text{non\_relative\_interference}} \times \text{non\_relative\_interference}_i 
+       + \beta_{\text{interviewer\_age}} \times \text{interviewer\_age}_i \notag \\
+       &\quad + \beta_{\text{interviewer\_gender}} \times \text{interviewer\_gender}_i 
+       + \beta_{\text{country}} \times \text{country}_i \notag \\
+       &\quad + \beta_{\text{question\_clarification}} \times \text{question\_clarification}_i 
+       + \beta_{\text{respondent\_reluctant}} \times \text{respondent\_reluctant}_i \notag \\
+       &\quad + \beta_{\text{respondent\_tried\_best}} \times \text{respondent\_tried\_best}_i \\
+\beta &\sim \text{Normal}(0, 10) \quad (\text{default non-informative prior}) \\
+\kappa &\sim \text{Normal}(0, 5) \quad (\text{default prior for cutpoints})
 \end{align}
 
-We run the model in R [@citeR] using the `rstanarm` package of @rstanarm. We use the default priors from `rstanarm`.
+Where:
 
+-   $\beta_0$ is the intercept of the model.
+-   $\beta \sim \text{Normal}(0, 10)$: Represents a non-informative prior for the regression coefficients.
+-   $\kappa \sim \text{Normal}(0, 5)$: Represents the prior for thresholds.
+
+This model is designed to examine how different types of interference, interviewer characteristics, and respondent behaviors impact whether the respondent understood the survey questions, considering the ordered nature of the response.
+
+## Prior distributions
+
+In the Bayesian logistic regression model implemented using the `rstanarm` package, default prior distributions are applied to the model parameters to ensure robustness and reliability in inference. These priors are designed to balance the need for appropriate regularization with the flexibility to let the data guide the modeling:
+
+-   **Intercept Priors**: For the intercept of the model, we use a normal prior distribution with a mean of 0 and a relatively large standard deviation, reflecting weakly informative priors. This choice helps stabilize the intercept term without imposing a strong prior belief, allowing the model to be flexible across diverse datasets.
+
+-   **Coefficient Priors**: Coefficients in the model are assigned normal prior distributions, also with a mean of 0 but with a smaller standard deviation, typically set around 2.5. This helps prevent the individual predictors from exerting overly large influences unless strongly supported by the data. For example, variables such as different types of interference (e.g., partner, child, parent) or interview methods benefit from such priors as they maintain moderate regularization to avoid overfitting.
+
+We ran the model in R using the `rstanarm` package (Team, 2021). The default priors from `rstanarm` provide an appropriate level of smoothing and regularization, making the model applicable to survey data with complex patterns while still allowing the data to reveal meaningful relationships, especially concerning factors that affect response quality.
 
 ### Model justification
 
-We expect a positive relationship between the size of the wings and time spent aloft. In particular...
+Existing research in survey methodology and social sciences suggests that factors such as interview method, the presence of disruptions during interviews, interviewer characteristics, and respondent behaviors significantly affect the quality of survey responses. In interviews with fewer disruptions, respondents are more likely to provide accurate and reliable answers. However, disruptions from various sources, such as partners, children, relatives, or even non-relatives, can compromise response quality. Additionally, interviewer characteristics—such as age and gender—may influence how comfortable respondents feel, which in turn affects the quality of their responses. The method of conducting the interview (e.g., face-to-face, phone, or self-administered) also plays a role in determining the overall effectiveness of data collection.
 
-We can use maths by including latex between dollar signs, for instance $\theta$.
+A Bayesian hierarchical logistic regression model was chosen for this analysis because the dependent variable, respondent_understood_binary, is binary in nature, indicating whether the respondent fully understood the survey questions. Logistic regression is a suitable approach when dealing with binary outcomes, and the Bayesian aspect helps in incorporating prior information and managing uncertainty in model parameters. This approach allows us to estimate the effect of various predictors—such as interview method, interference levels, and respondent reluctance—on the likelihood of understanding survey questions, providing a clear interpretation of how each factor contributes to the response quality.
 
+The use of Bayesian hierarchical logistic regression is further justified because it allows the model to adapt flexibly to the data structure and manage potential variability across different interview scenarios. For example, the presence of multiple types of disruptions—each with different possible levels—requires a model that can adequately account for such hierarchical data structures. Additionally, Bayesian methods provide a framework for incorporating uncertainty and variability in interviewer and respondent characteristics, thereby giving a more nuanced and informed estimation. This model choice aligns well with established practices in survey research, where complex interaction effects and varying levels of measurement need to be addressed thoughtfully to ensure valid inferences about the factors influencing survey data quality.
 
-# Results
+# Results and interpretation
 
-Our results are summarized in @tbl-modelresults.
+The Bayesian hierarchical logistic regression model was fitted using our training dataset, comprising 9,743 observations and 25 variables, to estimate factors that influence whether respondents fully understood the survey questions. @tbl-summary-model presents the summary of the model's key coefficients, including posterior mean estimates and credible intervals for each parameter, providing insights into the impact of interview disruptions, interviewer characteristics, and survey methods on response quality.
+
+### Key Findings from the Coefficients
+
+The analysis reveals that different types of disruptions and characteristics of the interview environment have a distinct impact on respondents’ comprehension of survey questions. Here are some of the key findings:
+
+-   **Interview Method**: Interview Method 9 was found to have an exceptionally large effect (Mean = 95.1), indicating it significantly improves the likelihood that respondents understand the questions. Conversely, other interview methods such as **Method 2** and **Method 3** had moderate effects, suggesting that the effectiveness of an interview style can vary substantially based on how it is implemented.
+
+-   **Disruptions During the Interview**:
+
+    -   **Partner Interference** had a negative effect on the quality of responses (Mean = -0.6). This indicates that the presence of a partner during the interview tends to lower the ability of the respondent to fully understand and accurately respond.
+    -   **Child Interference** and **Parent Interference** also showed notable negative impacts (Means = -0.8 and -1.6 respectively), highlighting that family-related disruptions can significantly hinder the respondent’s ability to provide reliable answers.
+    -   Interestingly, **Non-relative Interference** was associated with a positive effect (Mean = 1.0), suggesting that such disruptions may not be as distracting or might even motivate respondents to be more attentive.
+
+-   **Country Effects**: The model also included a factor for **country** to account for geographic variability in survey conditions. The results show variability in respondent comprehension across different countries. For instance:
+
+    -   **Germany (DE)** and **Hungary (HU)** had negative coefficients, indicating lower response comprehension in these countries.
+    -   In contrast, **Finland (FI)** showed neutral effects, reflecting possibly consistent survey conditions in that country.
+
+-   **Question Clarification**: Levels of **question clarification** were consistently found to negatively affect response quality. For example, **Clarification Level 4** had a mean of -3.0, implying that respondents requiring repeated clarification were less likely to fully understand the questions.
+
+-   **Respondent Reluctance**: Increased **respondent reluctance** also had a detrimental effect on comprehension. For example, **Reluctant Level 3** had a mean coefficient of -0.6, indicating hesitation or reluctance results in poorer quality responses.
+
+### Summary and Interpretation
+
+As detailed in @tbl-summary-model, the summary of coefficients provides a quantitative perspective on how each factor contributes to whether respondents fully understand survey questions. Notably:
+
+-   **Parental Interference** displayed the most substantial negative impact (Mean = -1.6), indicating that the presence of parents during an interview session significantly reduces comprehension levels. This suggests that minimizing parental presence could enhance the quality of responses.
+-   Conversely, **Non-relative Interference** was associated with a positive effect on understanding (Mean = 1.0), implying that some types of outside influence might actually promote a more careful engagement with the questions, perhaps because respondents feel more observed or responsible for their responses.
 
 ```{r}
+#| label: tbl-summary-model
+#| tbl-cap: "Summary of key coefficients from the Bayesian hierarchical logistic regression model analyzing survey response quality"
 #| echo: false
-#| eval: true
 #| warning: false
-#| message: false
-
 library(rstanarm)
 
 first_model <-
-  readRDS(file = here::here("models/first_model.rds"))
+  readRDS(file = here::here("models/model.rds"))
+summary <- summary(first_model)
+
+summary_table <- head(summary, 10)[, 1:1]
+
+kable(col.names = c(" ", "coefficient"),
+  summary_table, digits = 3)
 ```
 
 ```{r}
+#| label: fig-coefficient-intervals
+#| fig-cap: "The 90% credible intervals for all model coefficients from the Bayesian hierarchical logistic regression"
 #| echo: false
-#| eval: true
-#| label: tbl-modelresults
-#| tbl-cap: "Explanatory models of flight time based on wing width and wing length"
 #| warning: false
+#| fig.width: 8
+#| fig.height: 6
 
-modelsummary::modelsummary(
-  list(
-    "First model" = first_model
-  ),
-  statistic = "mad",
-  fmt = 2
+
+model_summary <- tidy(first_model, conf.int = TRUE, conf.level = 0.90)
+
+
+
+important_parameters <- c(
+  "interview_conduct_method2", 
+  "partner_interference1", 
+  "child_interference1",
+  "parent_interference1", 
+  "non_relative_interference1", 
+  "interviewer_gender2", 
+  "interviewer_age"
 )
+
+filtered_summary <- model_summary[model_summary$term %in% important_parameters, ]
+
+
+
+
+ggplot(filtered_summary, aes(x = estimate, y = term)) +
+  geom_point(size = 3, color = "blue") +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = 0.3, color = "blue") +
+  labs(
+    title = "Model Coefficients",
+    subtitle = "90% credible intervals",
+    x = "Coefficient Estimate",
+    y = "Parameters"
+  ) +
+  theme_minimal() +
+  xlim(-4, 4) 
 ```
 
+The Bayesian hierarchical logistic regression model's estimates are visualized in @fig-coefficient-intervals. Each point on the plot represents the estimated mean effect size of the predictor variables on the likelihood that the respondent understood the questions well, while the lines indicate the 90% credible intervals. These estimates reveal several key insights regarding factors that affect response quality in survey interviews:
 
+The variable partner_interference1 has a significant negative effect, indicating that when a partner is present during the interview, the quality of the respondent's understanding tends to decrease. This might be due to partners interrupting or distracting the respondent, which lowers their focus.
 
+The variable non_relative_interference1 shows the highest positive effect among the predictors, suggesting that interference from non-family members can sometimes enhance the respondent's performance. This could be due to increased formality or caution when responding in the presence of outsiders, leading to more careful answers.
+
+The variable interviewer_gender2 exhibits a slight negative effect, implying that female interviewers may encounter lower respondent understanding under certain conditions. However, the wide credible interval suggests that more data is needed to definitively determine the significance of this effect.
+
+interview_conduct_method2 also displays a negative effect, indicating that certain interview methods (such as telephone interviews) might not facilitate respondent comprehension as effectively as face-to-face methods.
+
+interviewer_age has an estimated effect close to zero with a broad credible interval, suggesting that interviewer age does not have a substantial influence on respondent understanding.
+
+These findings highlight the importance of considering the type of interference during interviews and specific characteristics of interviewers. It is evident that some types of disturbances and interview formats could significantly affect the reliability of collected data. By mitigating negative factors such as partner interference and selecting appropriate interview methods, the quality of survey data can be substantially improved, leading to more reliable conclusions in social survey research.
+
+Copy code
 
 # Discussion
 
 ## First discussion point {#sec-first-point}
 
-If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this. 
+If my paper were 10 pages, then should be be at least 2.5 pages. The discussion is a chance to show off what you know and what you learnt from all this.
 
 ## Second discussion point
 
@@ -326,8 +505,7 @@ Weaknesses and next steps should also be included.
 
 \appendix
 
-# Appendix {-}
-
+# Appendix {.unnumbered}
 
 # Additional data details
 
@@ -337,28 +515,7 @@ Weaknesses and next steps should also be included.
 
 In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check. This shows...
 
-In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows... 
-
-```{r}
-#| eval: true
-#| echo: false
-#| message: false
-#| warning: false
-#| label: fig-ppcheckandposteriorvsprior
-#| layout-ncol: 2
-#| fig-cap: "Examining how the model fits, and is affected by, the data"
-#| fig-subcap: ["Posterior prediction check", "Comparing the posterior with the prior"]
-
-pp_check(first_model) +
-  theme_classic() +
-  theme(legend.position = "bottom")
-
-posterior_vs_prior(first_model) +
-  theme_minimal() +
-  scale_color_brewer(palette = "Set1") +
-  theme(legend.position = "bottom") +
-  coord_flip()
-```
+In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows...
 
 ## Diagnostics
 
@@ -366,26 +523,6 @@ posterior_vs_prior(first_model) +
 
 @fig-stanareyouokay-2 is a Rhat plot. It shows... This suggests...
 
-```{r}
-#| echo: false
-#| eval: true
-#| message: false
-#| warning: false
-#| label: fig-stanareyouokay
-#| fig-cap: "Checking the convergence of the MCMC algorithm"
-#| fig-subcap: ["Trace plot", "Rhat plot"]
-#| layout-ncol: 2
-
-plot(first_model, "trace")
-
-plot(first_model, "rhat")
-```
-
-
-
 \newpage
 
-
 # References
-
-
