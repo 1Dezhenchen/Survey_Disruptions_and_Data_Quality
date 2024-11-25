@@ -14,7 +14,7 @@ library(tidyverse)
 library(rstanarm)
 library(arrow)
 library(car)
-library(brms)
+library(brms)›
 
 #### Read data ####
 analysis_data_train <- read_parquet("data/02-analysis_data/train_data.parquet")
