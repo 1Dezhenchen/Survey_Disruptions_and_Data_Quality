@@ -28,11 +28,12 @@ library(broom.mixed)
 library(kableExtra)
 library(car)
 library(loo)
+library(modelsummary)
 ```
 
-# Introduction
+# Introduction {#sec-intro}
 
-In recent years, the quality of social survey data has become an important topic of inquiry, especially with regard to how different disruptions impact respondent behavior. Several studies have contributed to this body of knowledge by focusing on factors that may affect the reliability of survey responses. Groves et al. (2009) examined the role of interviewer characteristics—such as experience and demeanor—in shaping the quality of responses through a multi-level modeling approach. In another key study, Couper and de Leeuw (2003) investigated how different modes of conducting interviews, like in-person versus telephone, influenced the comfort and attentiveness of respondents. Fowler and Mangione (1990) took a different approach by analyzing observational data to assess the impact of third-party presence during interviews. Although these works laid a valuable foundation for understanding data quality, there remains a gap in systematically analyzing the distinct effects of various kinds of disruptions, such as familial or environmental interference, on respondent understanding and response accuracy.
+In recent years, the quality of social survey data has become an important topic of inquiry, especially with regard to how different disruptions impact respondent behavior. Several studies have contributed to this body of knowledge by focusing on factors that may affect the reliability of survey responses. Groves et al. [@groves2011survey] examined the role of interviewer characteristics—such as experience and demeanor—in shaping the quality of responses through a multi-level modeling approach. In another key study, Couper and de Leeuw [@massey2013we] investigated how different modes of conducting interviews, like in-person versus telephone, influenced the comfort and attentiveness of respondents. Fowler and Mangione [@fowler1990standardized] took a different approach by analyzing observational data to assess the impact of third-party presence during interviews. Although these works laid a valuable foundation for understanding data quality, there remains a gap in systematically analyzing the distinct effects of various kinds of disruptions, such as familial or environmental interference, on respondent understanding and response accuracy.
 
 This study endeavors to address these overlooked aspects by closely examining the role of interview disruptions on data quality in a major social survey. Specifically, our analysis explores the influence of different types of interferences—including interruptions from partners, children, and other family members—on respondents' comprehension and engagement during the interview process. We employed a Bayesian logistic regression model utilizing the rstanarm package in R to capture these influences. The model incorporates a range of predictor variables, such as interviewer characteristics (age and gender), different methods of interview administration, and family-related interferences. During data preparation, the categorical levels of several predictor variables were simplified, excluding the 'country' variable, to ensure interpretability and to streamline model estimation. We also included indicators of respondent attitudes, such as whether questions were clarified during the interview or if reluctance to answer was observed, aiming for a more comprehensive understanding of respondent engagement.
 
@@ -40,7 +41,7 @@ Our results reveal compelling insights into the effects of these disruptions on 
 
 Beyond merely quantifying these effects, our study provides deeper implications for enhancing data collection practices in the field. The evidence points to the need for improved interviewer training focused on managing disruptions effectively, which can help ensure the collection of high-quality data even in less-than-ideal circumstances. The significant negative effects of family interference suggest that in-home surveys could benefit from targeted strategies to minimize such disruptions, including adjusting the timing of interviews or providing incentives for privacy during responses. Furthermore, the results highlight the importance of understanding respondent reluctance and tailoring interviewer interactions to reduce its occurrence. These insights have relevance for not only improving the current practices of social surveys but also for shaping future methodologies in an increasingly diverse and complex interviewing landscape.
 
-The remainder of this paper is organized to present a comprehensive exploration of these topics. Section 2 provides a detailed overview of the dataset, focusing on the different variables and their role in assessing data quality. It also outlines the preprocessing steps taken, including data cleaning and the recoding of variables. Section 3 introduces the Bayesian logistic regression methodology, explaining the statistical approach and justifying the selection of priors for the analysis. In Section 4, we present the empirical findings, including parameter estimates and an interpretation of the relationships uncovered by the model. Section 5 discusses the practical implications of these findings, emphasizing the improvements needed in interviewer training and the strategies for reducing respondent interference. Finally, Section 6 summarizes the key contributions of this research, outlines the limitations, and suggests avenues for future work—particularly concerning the integration of new data collection technologies and adaptive survey designs aimed at mitigating the impact of disruptions on respondent data quality.
+The paper is structured to offer an in-depth examination of the factors that affect respondent comprehension during social survey interviews. Following the introduction in @sec-intro, @sec-data provides a detailed overview of the dataset, focusing on the different variables and their role in assessing data quality. It also outlines the preprocessing steps taken, including data cleaning and the recoding of variables. @sec-model introduces the Bayesian logistic regression methodology, explaining the statistical approach and justifying the selection of priors for the analysis. In @sec-result, we present the empirical findings, including parameter estimates and an interpretation of the relationships uncovered by the model. @sec-discussion discusses the practical implications of these findings, emphasizing the improvements needed in interviewer training and the strategies for reducing respondent interference. Finally, @sec-model-details summarizes the key contributions of this research, outlines the limitations, and suggests avenues for future work—particularly concerning the integration of new data collection technologies and adaptive survey designs aimed at mitigating the impact of disruptions on respondent data quality.
 
 # Estimand
 
@@ -50,42 +51,46 @@ This study aims to evaluate the factors that influence the quality and reliabili
 
 ## Overview
 
-We use the statistical programming language R (R Core Team 2023) to process, analyze, and visualize survey data exploring the impact of interview disruptions on response quality. The dataset used in this study includes several subsets tailored to different stages of the analysis, enabling a systematic and detailed examination of the research questions. The main dataset for modeling consists of 9,743 rows and 25 variables, capturing detailed information about different types of disruptions (e.g., partner, child, or relative interference), interview methods, and respondent characteristics.
+We use the statistical programming language R [@citeR] to process, analyze, and visualize survey data exploring the impact of interview disruptions on response quality. The dataset for this study is sourced from [European Social Survey](https://ess.sikt.no/en/datafile/0c3f5fda-4fe0-42f2-b4c8-4ef093c0508f/7?tab=0&elems=de8c08b6-e406-4c56-92ee-4272818cae96_1), which collects information on societal attitudes and behaviors across multiple European countries. It includes several subsets tailored to different stages of the analysis, allowing a systematic examination of factors affecting survey response quality. The main dataset, used for modeling, consists of 9,743 rows and 25 variables. These data points capture details about various types of disruptions (e.g., partner, child, or relative interference), interview methods, and respondent characteristics. All responses are collected using standardized methods to ensure comparability across countries, thereby facilitating a detailed exploration of the impact of environmental factors, such as interruptions during interviews, on response quality. 
 
-To ensure the reliability of the analysis, we filtered the data to exclude incomplete or ambiguous responses for key variables, such as missing values in "respondent_understood." Responses were also recoded into binary categories to focus on meaningful distinctions in response quality, while variables with excessive categories were grouped to improve interpretability. These preprocessing steps were essential to refine the dataset and facilitate robust modeling.
+To ensure the reliability of the analysis, we filtered the data to exclude incomplete or ambiguous responses for key variables, such as missing values in "respondent_understood." Responses were also recoded into binary categories to focus on meaningful distinctions in response quality, while variables with excessive categories were grouped to improve interpretability.Different countries may implement localized adaptations in survey administration, which could influence response behaviors. To account for this, country-level metadata is included, allowing for the analysis of cross-national variations. These preprocessing steps were essential to refine the dataset and facilitate robust modeling.
 
-The following R packages were employed to streamline the data analysis workflow:
+The following R packages were utilized to facilitate and streamline the data analysis process:
 
--   **tidyverse** (Wickham et al. 2021): Used for efficient data manipulation, cleaning, and transformation. It includes:
+- **arrow** [@arrow]: Employed for efficiently reading and writing large datasets, enhancing data handling across different systems.
 
--   **dplyr** (Wickham, François, et al. 2021): For summarizing and managing complex datasets.
+- **knitr** [@knitr]: Used to create dynamic documents with R, including reports and presentations. It enables seamless integration of R code and text.
 
--   **ggplot2** (Wickham 2021): For creating powerful and flexible visualizations.
+- **rstanarm** [@rstanarm]: Provides tools for Bayesian regression modeling using the 'Stan' platform, making it straightforward to apply Bayesian models in a regression context.
 
--   **rstanarm** (Team 2021): Facilitated the implementation of Bayesian models, enabling straightforward regression modeling using Stan.
+- **tidyverse** [@tidyverse]: A collection of R packages used for data manipulation, visualization, and cleaning, providing a unified structure to handle complex data workflows.
 
--   **arrow** (Apache Arrow 2021): Employed for efficiently reading and writing large datasets, enhancing data handling capabilities across systems.
+- **ggplot2** [@ggplot2]: Utilized for creating detailed visualizations, offering a flexible grammar of graphics to develop sophisticated charts and graphs.
 
--   **car** (Fox et al. 2021): Provided functions for regression diagnostics and other statistical analyses, particularly useful for checking assumptions and model validity.
+- **bayesplot** [@bayesplot]: Facilitates the visualization of Bayesian model results, useful for diagnostic checks and interpreting the results of Bayesian models.
 
--   **brms** (Bürkner 2021): A package for Bayesian regression modeling, which was used to implement more complex modeling approaches for the data.
+- **ggridges** [@ggridges]: Used to create ridge plots, which are useful for visualizing distributions, enhancing the exploration of posterior distributions from Bayesian models.
 
--   **rsample** (Kuhn 2021): Used for creating resampling datasets, ensuring robust model validation by facilitating cross-validation and bootstrapping techniques.
+- **broom.mixed** [@broom]: Extends the broom package to support models with random effects, summarizing mixed models in a tidy and interpretable format.
 
--   **janitor** (Firke 2021): Simplified data cleaning processes by helping manage variable names and data structures, making raw data easier to handle.
+- **kableExtra** [@kableExtra]: Enhances the basic table formatting capabilities of the 'knitr' package, providing additional functions for creating aesthetically pleasing and informative tables.
 
--   **GGally** (Schloerke et al. 2021): Used to enhance ggplot2 visualizations by providing additional functions for correlation plots and pairwise visualizations, which are useful for exploratory data analysis. This study aims to provide practical insights into how various disruptions affect data quality in survey settings, helping to optimize survey design and execution in the future. \## Measurement
+- **car** [@car]: Used for regression diagnostics and statistical analysis, particularly valuable for testing assumptions and evaluating model quality.
 
-The data for this study is sourced from the European Social Survey (ESS), which collects information on societal attitudes and behaviors across multiple European countries. The dataset focuses on respondents’ understanding of survey questions, their cooperation levels, and the impact of environmental factors such as interruptions during interviews. All responses are collected using standardized methods to ensure comparability across countries.
+- **loo** [@loo]: Provides tools for leave-one-out cross-validation, which was crucial in assessing model performance and ensuring that the Bayesian models generalize well.
 
-Different countries may implement localized adaptations in survey administration, which could influence response behaviors. To account for this, country-level metadata is included, allowing for the analysis of cross-national variations.
+- **modelsummary** [@modelsummary]: Summarizes statistical models in a clear, tabular format, supporting the communication of regression and other model results.
+
+- **_Telling Stories with Data_** [@tellingstories]: This book was referenced for its code and methodologies in presenting data and statistical information.
+
+
 
 ```{r}
 #| warning: false
 #| message: false
 #| echo: false
-#| label: tbl-aerial_preview
-#| tbl-cap: "Survey responses on the impact of interview disruptions across countries in social surveys"
+#| label: tbl-survey_preview
+#| tbl-cap: "Survey interview disruptions and factors influencing respondent comprehension"
 
 # Load in data
 analysis_data <- read_parquet(here::here("data/02-analysis_data/analysis_data.parquet"))
@@ -98,11 +103,9 @@ sampled_data <- analysis_data %>%
 
 # Select important variables from the model
 important_columns <- c(
-  "interview_conduct_method", "partner_interference", "child_interference",
-  "parent_interference", "relative_interference", "non_relative_interference",
-  "interviewer_age", "interviewer_gender", "country", "question_clarification",
-  "respondent_reluctant", "respondent_tried_best"
-)
+  "respondent_understood_binary", "partner_interference", 
+  "parent_interference",  
+  "interviewer_age",  "country")
 
 # Filter data to only include important columns
 analysis_data_selected <- sampled_data %>%
@@ -112,16 +115,15 @@ analysis_data_selected <- sampled_data %>%
 analysis_data_selected |>
   head(10) |>  # Limit to 10 rows to ensure readability
   kable(booktabs = TRUE, align = "c", col.names = c(
-    "Interview Method", "Partner Interference", "Child Interference",
-    "Parent Interference", "Relative Interference", "Non-relative Interference",
-    "Interviewer Age", "Interviewer Gender", "Country",
-    "Question Clarification", "Respondent Reluctant", "Respondent Tried Best"
+     "respondent_understood_binary", "partner_interference", 
+  "parent_interference",  
+  "interviewer_age",  "country"
   )) %>%
   kable_styling(full_width = FALSE)
 
 
 ```
-
+@tbl-survey_preview presents the first six rows from the cleaned dataset, focusing on interview disruptions and respondent comprehension during social survey interviews.
 ## Outcome variables
 
 Our analysis focuses on the following variables, with a specific focus on **respondent_understood_binary** as the dependent variable:
@@ -251,17 +253,7 @@ ggplot(analysis_data, aes(x = respondent_tried_best, fill = as.factor(interferen
 
 The bar plot shows the proportion of interviews with and without interference for each effort level, ranging from 1 (low effort) to 5 (high effort), along with an additional "Other" category.
 
-From the plot, we can observe that interference is present across all effort levels, though its proportion varies slightly. Higher levels of effort (e.g., 4 and 5) tend to have a similar distribution of interference presence, while the "Other" category shows a slightly lower proportion of interference.
-
-This visualization provides an overview of how respondent effort and the presence of interference interact in the dataset.
-
-### Key Observations:
-
--   Interviewers aged 40 to 50 are prominent in levels 4 and 5, showing higher densities in these groups.
--   Clarification levels 1 and 2 show a broader distribution of interviewer ages, with no distinct peak.
--   The "Other" category exhibits a more balanced spread of ages, without significant density concentrations.
-
-This visualization highlights the distribution of interviewer age across clarification levels and provides insights into age-related patterns in survey interactions.
+From the plot, we can observe that interference is present across all effort levels, though its proportion varies slightly. Higher levels of effort (e.g., 4 and 5) tend to have a similar distribution of interference presence, while the "Other" category shows a slightly lower proportion of interference.This visualization provides an overview of how respondent effort and the presence of interference interact in the dataset.
 
 ## Justification
 
@@ -280,6 +272,8 @@ The variables selected for this study were chosen carefully based on their impor
 Certain variables, such as **COUNTRY**, **SOCIOECONOMIC STATUS**, and **HOUSEHOLD COMPOSITION**, were excluded due to high levels of missing data or lesser relevance to the primary focus of the study. Similarly, variables with extensive categories were simplified to binary or grouped formats to enhance clarity and focus on essential distinctions.
 
 After filtering and processing, the final dataset consists of **9,743 observations** and **25 variables**, structured to support a clear and concise examination of the study’s research objectives.
+
+# Model {#sec-model}
 
 ### Model Set-up
 
@@ -382,7 +376,7 @@ In the Bayesian logistic regression model implemented using the `rstanarm` packa
 
 -   **Coefficient Priors**: Coefficients in the model are assigned normal prior distributions, also with a mean of 0 but with a smaller standard deviation, typically set around 2.5. This helps prevent the individual predictors from exerting overly large influences unless strongly supported by the data. For example, variables such as different types of interference (e.g., partner, child, parent) or interview methods benefit from such priors as they maintain moderate regularization to avoid overfitting.
 
-We ran the model in R using the `rstanarm` package (Team, 2021). The default priors from `rstanarm` provide an appropriate level of smoothing and regularization, making the model applicable to survey data with complex patterns while still allowing the data to reveal meaningful relationships, especially concerning factors that affect response quality.
+We ran the model in R [@citeR] using the `rstanarm` package@rstanarm. The default priors from `rstanarm` provide an appropriate level of smoothing and regularization, making the model applicable to survey data with complex patterns while still allowing the data to reveal meaningful relationships, especially concerning factors that affect response quality.
 
 ### Model justification
 
@@ -392,7 +386,7 @@ A Bayesian hierarchical logistic regression model was chosen for this analysis b
 
 The use of Bayesian hierarchical logistic regression is further justified because it allows the model to adapt flexibly to the data structure and manage potential variability across different interview scenarios. For example, the presence of multiple types of disruptions—each with different possible levels—requires a model that can adequately account for such hierarchical data structures. Additionally, Bayesian methods provide a framework for incorporating uncertainty and variability in interviewer and respondent characteristics, thereby giving a more nuanced and informed estimation. This model choice aligns well with established practices in survey research, where complex interaction effects and varying levels of measurement need to be addressed thoughtfully to ensure valid inferences about the factors influencing survey data quality.
 
-# Results and interpretation
+# Results {#sec-result}
 
 The Bayesian hierarchical logistic regression model was fitted using our training dataset, comprising 9,743 observations and 25 variables, to estimate factors that influence whether respondents fully understood the survey questions. @tbl-summary-model presents the summary of the model's key coefficients, including posterior mean estimates and credible intervals for each parameter, providing insights into the impact of interview disruptions, interviewer characteristics, and survey methods on response quality.
 
@@ -496,7 +490,7 @@ interviewer_age has an estimated effect close to zero with a broad credible inte
 
 These findings highlight the importance of considering the type of interference during interviews and specific characteristics of interviewers. It is evident that some types of disturbances and interview formats could significantly affect the reliability of collected data. By mitigating negative factors such as partner interference and selecting appropriate interview methods, the quality of survey data can be substantially improved, leading to more reliable conclusions in social survey research.
 
-# Discussion
+# Discussion {#sec-discussion}
 
 This analysis employed a Bayesian logistic regression model to investigate factors influencing respondents' comprehension during interviews. By incorporating various types of interference, interview methods, and respondent characteristics, the model elucidates how these variables impact understanding during social survey interviews.
 
@@ -543,57 +537,61 @@ Overall, the study provides actionable insights into how survey administrators c
 # Additional data details
 
 # Model details {#sec-model-details}
-
-## Posterior predictive check
-###Validation
+## Model summary
 ```{r}
+#| label: tbl-summary
+#| tbl-cap: "Coefficients from a Bayesian logistic regression model examining factors affecting respondents' understanding during interviews, including interview methods, interference types, and country-level indicators."
 #| echo: false
 #| warning: false
+modelsummary(
+  list("Bayesian Logistic Regression" = first_model),
+  metrics = c("R2", "RMSE")
+)
+```
+@tbl-summary presents the coefficients from our model analyzing factors that influence response comprehension during interviews. The intercept value, 1.823, represents the baseline level of response comprehension when all other predictors are at their reference or baseline levels. Key variables include "interview_conduct_method9," which has a highly positive coefficient of 81.309, indicating that this particular interview method greatly enhances respondent comprehension. In contrast, factors such as "parent_interference" and "child_interference" exhibit negative coefficients (-1.586 and -0.623 respectively), suggesting that these types of interference are associated with lower levels of understanding during interviews.
+
+Additionally, non-relative interference, which shows a positive coefficient of 0.941, suggests that having individuals outside the immediate family present may be less disruptive, or even beneficial, for the comprehension of survey questions. Interviewer-related variables, such as "interviewer_gender," appear to have minimal effects on comprehension, as evidenced by small coefficients like 0.100, suggesting that interviewer attributes play a relatively minor role compared to environmental and relational factors during social surveys
+## VIF
+```{r}
+#| label: tbl-vif
+#| tbl-cap: "Variance Inflation Factors (VIF) for Each Predictor in the Model."
+#| echo: false
+#| warning: false
+
+vif_values <- vif(first_model)
+
+gvif_df <- data.frame(
+  Variable = rownames(vif_values), 
+  GVIF = round(vif_values[, "GVIF"], 3),
+  Df = vif_values[, "Df"],
+  `GVIF^(1/(2*Df))` = round(vif_values[, "GVIF^(1/(2*Df))"], 3)
+)
+
+kable(gvif_df)
+
+```
+@tbl-vif presents the Generalized Variance Inflation Factors (GVIF) for each predictor in the Bayesian logistic regression model. GVIF helps assess multicollinearity among predictors, indicating how much the variance of a regression coefficient is inflated due to correlations between variables.
+
+Most predictors, such as respondent_tried_best (GVIF = 3.186, Df = 5) and respondent_reluctant (GVIF = 2.725, Df = 5), show moderate GVIF values, suggesting manageable multicollinearity. The adjusted GVIF values, which are generally close to 1, indicate that the inflation effect is controlled across variables.
+
+In summary, the GVIF analysis indicates that multicollinearity is present but not severe enough to threaten model reliability. Further analysis may focus on predictors with slightly higher GVIF to ensure stability.
+
+## Posterior predictive check
+```{r}
+#| eval: true
+#| echo: false
+#| message: false
+#| warning: false
+#| label: fig-ppcheck
+#| fig-cap: "Posterior Predictive Check: The comparison between observed response values (dark line) and model-generated replications (light lines) demonstrates the model's ability to replicate the observed response patterns, indicating a good fit and capturing the main features of the response distribution."
+
 
 pp_check(first_model) +
   theme_classic() +
   theme(legend.position = "bottom")+ xlim(-0.1, 1.2)
 
-vif(first_model)
-
-
-residuals <- residuals(first_model, type = "response")
-hist(residuals, main = "Residual Histogram", xlab = "Residuals")
-
-r2_values <- bayes_R2(first_model)
-r2_df <- data.frame(Index = 1:length(r2_values), R2 = r2_values)
-
-ggplot(r2_df, aes(x = Index, y = R2)) +
-  geom_bar(stat = "identity", fill = "steelblue") +
-  labs(title = "Bayesian R^2 Metrics for first_model Observations", x = "Observation Index", y = "R^2 Value") +
-  theme_minimal()
-
-
-
-
-# Perform LOO cross-validation and assign to loo_results
-loo_results <- loo(first_model)
-# Extract Pareto k values from loo results and plot
-pareto_k <- loo_results$diagnostics$pareto_k
-pareto_k_df <- data.frame(Index = 1:length(pareto_k), Pareto_k = pareto_k)
-
-ggplot(pareto_k_df, aes(x = Index, y = Pareto_k)) +
-  geom_bar(stat = "identity", fill = "orange") +
-  geom_hline(yintercept = 0.7, linetype = "dashed", color = "red") +
-  labs(title = "Pareto k Diagnostic Values", x = "Observation Index", y = "Pareto k Value") +
-  theme_minimal()
-
-
-
-loo_df <- data.frame(Observation = 1:length(loo_results$pointwise[,"elpd_loo"]),
-                     ELPD_LOO = loo_results$pointwise[,"elpd_loo"])
-
-ggplot(loo_df, aes(x = Observation, y = ELPD_LOO)) +
-  geom_point(color = "darkgreen") +
-  geom_smooth(method = "loess", color = "red", se = FALSE) +
-  labs(title = "Leave-One-Out Cross Validation (ELPD_LOO)", x = "Observation Index", y = "ELPD_LOO") +
-  theme_classic()
 ```
+In @fig-ppcheck, we implement a posterior predictive check, which displays the overlap between the observed data (denoted by \( y \)) and the replicated data generated from the model (denoted by \( y_{\text{rep}} \)). The replicated lines closely follow the shape and central trend of the observed data, particularly around the main peak at 0.9, which suggests that the model captures the overall distribution effectively. This alignment indicates that the model successfully represents the underlying data-generating process, especially in regions with high data density. While the model's performance appears strong, any visible discrepancies—particularly in areas of lower density—may highlight aspects of the data structure that are not fully captured. Addressing such discrepancies could involve refining the model by introducing additional parameters or reconsidering underlying assumptions. Overall, this comparison provides evidence that the model fits well, though there remain potential areas for enhancement to better encompass the full range of data complexities.
 
 
 ## Prediction
@@ -658,6 +656,69 @@ ggplot(scatter_data, aes(x = Actual, y = Predicted)) +
 ```
 
 ## Diagnostics
+### Validation
+```{r}
+#| echo: false
+#| eval: true
+#| message: false
+#| warning: false
+#| label: fig-diagnostic-checks
+#| fig-cap: "Comparing Diagnostic Visualizations for Model Checking"
+#| fig-subcap: ["Residual Histogram", "Pareto k Diagnostic Values"]
+#| layout-ncol: 2
+
+# Generate Residual Histogram
+residuals <- residuals(first_model, type = "response")
+hist(residuals, main = "Residual Histogram", xlab = "Residuals")
+
+# Perform LOO cross-validation and assign to loo_results
+loo_results <- loo(first_model)
+
+# Extract Pareto k values from loo results and create the Pareto k Diagnostic plot
+pareto_k <- loo_results$diagnostics$pareto_k
+pareto_k_df <- data.frame(Index = 1:length(pareto_k), Pareto_k = pareto_k)
+
+ggplot(pareto_k_df, aes(x = Index, y = Pareto_k)) +
+  geom_bar(stat = "identity", fill = "orange") +
+  geom_hline(yintercept = 0.7, linetype = "dashed", color = "red") +
+  labs(title = "Pareto k Diagnostic Values", x = "Observation Index", y = "Pareto k Value") +
+  theme_minimal()
+
+
+
+```
+In Figure @fig-diagnostic-checks-1, the residual histogram displays the distribution of residuals from the model. The concentrated frequency around zero suggests that the model effectively captures much of the variability in the data, with fewer extreme deviations, thereby indicating a reasonable level of fit.
+
+Figure @fig-diagnostic-checks-2 presents the Pareto k diagnostic values, which help assess the reliability of the estimated leave-one-out cross-validation (LOO) predictions. The majority of Pareto k values fall below the threshold of 0.7, indicating that the model is well-calibrated with only minimal issues in terms of influential observations.
+```{r}
+#| echo: false
+#| eval: true
+#| message: false
+#| warning: false
+#| label: fig-loo-rhat-checks
+#| fig-cap: "Comparing Diagnostic Visualizations for Model Checking"
+#| fig-subcap: ["Leave-One-Out Cross Validation (ELPD_LOO)", "Rhat Diagnostic Plot"]
+#| layout-ncol: 2
+# Create Leave-One-Out Cross Validation (ELPD_LOO) plot
+loo_df <- data.frame(Observation = 1:length(loo_results$pointwise[,"elpd_loo"]),
+                     ELPD_LOO = loo_results$pointwise[,"elpd_loo"])
+
+ggplot(loo_df, aes(x = Observation, y = ELPD_LOO)) +
+  geom_point(color = "darkgreen") +
+  geom_smooth(method = "loess", color = "red", se = FALSE) +
+  labs(title = "Leave-One-Out Cross Validation (ELPD_LOO)", x = "Observation Index", y = "ELPD_LOO") +
+  theme_classic()
+
+# Generate Rhat Diagnostic Plot
+rhat_values <- rhat(first_model)
+mcmc_rhat(rhat_values)
+
+```
+
+Figure @fig-loo-rhat-checks-1 is a scatter plot for leave-one-out cross-validation (ELPD_LOO) estimates. The consistency of the points around the red loess smooth line suggests that the model’s predictions are largely consistent across different observations, thus reinforcing the model's robustness.
+
+Figure @fig-loo-rhat-checks-2 is an Rhat plot, showing that all values of the Rhat diagnostic are close to 1. This indicates good mixing of the Markov Chain Monte Carlo (MCMC) chains and suggests that the model has likely converged appropriately, making the posterior estimates trustworthy.
+
 
 
 \newpage
