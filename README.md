@@ -1,5 +1,6 @@
 ---
-editor_options: Factors Influencing Respondent Comprehension in Social Survey Interviews
+title: "Factors Influencing Respondent Comprehension in Social Survey Interviews"
+editor_options: 
   markdown: 
     wrap: sentence
 ---
