@@ -506,25 +506,25 @@ The model analysis reveals that different types of interference significantly af
 
 In contrast, interviewer characteristics, such as gender, show little effect on comprehension. This suggests that while environmental and relational interference plays a crucial role, interviewer attributes do not significantly influence respondents' comprehension in the context of this study.
 
-## Implications for Managing Interview Interference**
+## Implications for Managing Interview Interference
 
 The strategic implication of these findings is that managing the interview environment is crucial for improving data quality. Since partner and child interference are associated with a reduced likelihood of comprehension, measures should be considered to minimize such disruptions. This might include conducting interviews in a more private setting or explicitly instructing respondents to minimize interruptions during the interview.
 
 Variables related to the interview method also show significant impact. The coefficient for “interview_conduct_method3” is positive, indicating that certain specific methods, possibly involving higher levels of interaction or explanation, contribute to improved comprehension. This implies that training interviewers to adopt methods that emphasize clarity and engagement could enhance respondents' understanding, even in the presence of interference.
 
-## Limitations and Areas for Improvement**
+## Limitations and Areas for Improvement
 
 A key limitation of the model is the generalizability of its findings, particularly regarding different population groups. The current dataset may not capture all cultural or socioeconomic factors that could influence comprehension. For instance, while country-level effects are included, many of these effects are either negative or negligible, suggesting that unmeasured factors may explain differences between regions.
 
 Additionally, the model's predictive performance, assessed through the Bayesian R-squared value, is moderate (mean R² around 0.32). This indicates that while the model accounts for some variability in response comprehension, a substantial amount remains unexplained. Future research could incorporate additional variables, such as respondents' education levels or prior survey experience, to enhance model fit and explanatory power.
 
-## Future Research Directions**
+## Future Research Directions
 
 Building on these findings, future research could explore more granular aspects of interference, such as the intensity or duration of disruptions. Understanding whether brief interruptions have a different effect compared to prolonged interference could help develop more precise guidelines for survey management.
 
 Further research could also examine interaction effects between variables, such as how partner interference affects respondents with varying levels of willingness to participate. This could unveil more targeted strategies to improve survey conditions, ultimately leading to higher data reliability.
 
-## Practical Insights for Survey Management**
+## Practical Insights for Survey Management
 
 The results of this analysis underscore the importance of optimizing survey conditions to enhance respondent comprehension. Minimizing interference and adopting effective interview methods can significantly improve the quality of collected data. Survey administrators might consider providing pre-interview guidance to help respondents reduce disruptions and training interviewers in techniques proven to enhance comprehension.
 
@@ -545,18 +545,56 @@ Overall, the study provides actionable insights into how survey administrators c
 # Model details {#sec-model-details}
 
 ## Posterior predictive check
+###Validation
+```{r}
+#| echo: false
+#| warning: false
 
-In @fig-ppcheckandposteriorvsprior-1 we implement a posterior predictive check. This shows...
+pp_check(first_model) +
+  theme_classic() +
+  theme(legend.position = "bottom")+ xlim(-0.1, 1.2)
 
-In @fig-ppcheckandposteriorvsprior-2 we compare the posterior with the prior. This shows...
+vif(first_model)
 
-## Diagnostics
 
-@fig-stanareyouokay-1 is a trace plot. It shows... This suggests...
+residuals <- residuals(first_model, type = "response")
+hist(residuals, main = "Residual Histogram", xlab = "Residuals")
 
-@fig-stanareyouokay-2 is a Rhat plot. It shows... This suggests...
+r2_values <- bayes_R2(first_model)
+r2_df <- data.frame(Index = 1:length(r2_values), R2 = r2_values)
 
-\newpage
+ggplot(r2_df, aes(x = Index, y = R2)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(title = "Bayesian R^2 Metrics for first_model Observations", x = "Observation Index", y = "R^2 Value") +
+  theme_minimal()
+
+
+
+
+# Perform LOO cross-validation and assign to loo_results
+loo_results <- loo(first_model)
+# Extract Pareto k values from loo results and plot
+pareto_k <- loo_results$diagnostics$pareto_k
+pareto_k_df <- data.frame(Index = 1:length(pareto_k), Pareto_k = pareto_k)
+
+ggplot(pareto_k_df, aes(x = Index, y = Pareto_k)) +
+  geom_bar(stat = "identity", fill = "orange") +
+  geom_hline(yintercept = 0.7, linetype = "dashed", color = "red") +
+  labs(title = "Pareto k Diagnostic Values", x = "Observation Index", y = "Pareto k Value") +
+  theme_minimal()
+
+
+
+loo_df <- data.frame(Observation = 1:length(loo_results$pointwise[,"elpd_loo"]),
+                     ELPD_LOO = loo_results$pointwise[,"elpd_loo"])
+
+ggplot(loo_df, aes(x = Observation, y = ELPD_LOO)) +
+  geom_point(color = "darkgreen") +
+  geom_smooth(method = "loess", color = "red", se = FALSE) +
+  labs(title = "Leave-One-Out Cross Validation (ELPD_LOO)", x = "Observation Index", y = "ELPD_LOO") +
+  theme_classic()
+```
+
 
 ## Prediction
 ```{r}
@@ -618,51 +656,12 @@ ggplot(scatter_data, aes(x = Actual, y = Predicted)) +
 
 
 ```
-## Validation
-```{r}
 
-pp_check(first_model) +
-  theme_classic() +
-  theme(legend.position = "bottom")
-vif(first_model)
+## Diagnostics
 
 
-residuals <- residuals(first_model, type = "response")
-hist(residuals, main = "Residual Histogram", xlab = "Residuals")
-
-r2_values <- bayes_R2(first_model)
-r2_df <- data.frame(Index = 1:length(r2_values), R2 = r2_values)
-
-ggplot(r2_df, aes(x = Index, y = R2)) +
-  geom_bar(stat = "identity", fill = "steelblue") +
-  labs(title = "Bayesian R^2 Metrics for first_model Observations", x = "Observation Index", y = "R^2 Value") +
-  theme_minimal()
+\newpage
 
 
-
-
-# Perform LOO cross-validation and assign to loo_results
-loo_results <- loo(first_model)
-# Extract Pareto k values from loo results and plot
-pareto_k <- loo_results$diagnostics$pareto_k
-pareto_k_df <- data.frame(Index = 1:length(pareto_k), Pareto_k = pareto_k)
-
-ggplot(pareto_k_df, aes(x = Index, y = Pareto_k)) +
-  geom_bar(stat = "identity", fill = "orange") +
-  geom_hline(yintercept = 0.7, linetype = "dashed", color = "red") +
-  labs(title = "Pareto k Diagnostic Values", x = "Observation Index", y = "Pareto k Value") +
-  theme_minimal()
-
-
-
-loo_df <- data.frame(Observation = 1:length(loo_results$pointwise[,"elpd_loo"]),
-                     ELPD_LOO = loo_results$pointwise[,"elpd_loo"])
-
-ggplot(loo_df, aes(x = Observation, y = ELPD_LOO)) +
-  geom_point(color = "darkgreen") +
-  geom_smooth(method = "loess", color = "red", se = FALSE) +
-  labs(title = "Leave-One-Out Cross Validation (ELPD_LOO)", x = "Observation Index", y = "ELPD_LOO") +
-  theme_classic()
-```
 
 # References
