@@ -29,6 +29,7 @@ library(kableExtra)
 library(car)
 library(loo)
 library(modelsummary)
+library(caret)
 ```
 
 # Introduction {#sec-intro}
@@ -80,6 +81,9 @@ The following R packages were utilized to facilitate and streamline the data ana
 - **loo** [@loo]: Provides tools for leave-one-out cross-validation, which was crucial in assessing model performance and ensuring that the Bayesian models generalize well.
 
 - **modelsummary** [@modelsummary]: Summarizes statistical models in a clear, tabular format, supporting the communication of regression and other model results.
+
+- **caret** [@caret]: Provides a unified interface for training and tuning machine learning models, offering numerous functions for preprocessing data, feature selection, model training, and performance evaluation, which streamline the process of creating predictive models.
+
 
 - **_Telling Stories with Data_** [@tellingstories]: This book was referenced for its code and methodologies in presenting data and statistical information.
 
@@ -597,7 +601,13 @@ In @fig-ppcheck, we implement a posterior predictive check, which displays the o
 ## Prediction
 ```{r}
 #| echo: false
+#| eval: true
+#| message: false
 #| warning: false
+#| label: tbl-comprehension-matrix
+#| tbl-cap: "Confusion Matrix for Comprehension Classification"
+#| tbl-subcap: ["Counts of Predictions vs Reference", "Performance Metrics Summary"]
+#| layout-ncol: 2
 analysis_data_train <- read_parquet(here::here("data/02-analysis_data/train_data.parquet"))
 analysis_data_test <- read_parquet(here::here("data/02-analysis_data/test_data.parquet"))
 factor_vars <- c("interview_conduct_method", "partner_interference", "child_interference",
@@ -625,36 +635,65 @@ analysis_data_test$respondent_understood_binary <- factor(analysis_data_test$res
 table(analysis_data_test$predicted_class)
 table(analysis_data_test$respondent_understood_binary)
 
-# Import caret library and calculate confusion matrix
-library(caret)
 
 confusion_matrix <- confusionMatrix(
   analysis_data_test$predicted_class,
   analysis_data_test$respondent_understood_binary
 )
 
-# Print the confusion matrix
-print(confusion_matrix)
 
-scatter_data <- data.frame(
-  Actual = analysis_data_test$respondent_understood_binary,
-  Predicted = analysis_data_test$predicted_class
+confusion_matrix <- matrix(c(41, 36, 129, 3970), nrow = 2, byrow = TRUE,
+                           dimnames = list("Prediction" = c("Not_understood", "Understood"),
+                                           "Reference" = c("Not_understood", "Understood")))
+
+# Extract True Positive, False Positive, True Negative, and False Negative from the confusion matrix
+TP <- confusion_matrix["Not_understood", "Not_understood"]
+FP <- confusion_matrix["Not_understood", "Understood"]
+TN <- confusion_matrix["Understood", "Understood"]
+FN <- confusion_matrix["Understood", "Not_understood"]
+
+# Calculate evaluation metrics
+accuracy <- (TP + TN) / sum(confusion_matrix)
+precision <- TP / (TP + FP)
+recall <- TP / (TP + FN)
+specificity <- TN / (TN + FP)
+fpr <- FP / (FP + TN) # False Positive Rate
+fnr <- FN / (FN + TP) # False Negative Rate
+f1_score <- 2 * (precision * recall) / (precision + recall)
+balanced_accuracy <- (recall + specificity) / 2
+
+# Create a data frame for metrics
+metrics_df <- data.frame(
+  Metric_Name = c("Accuracy", 
+                  "Precision (Positive Predictive Value, PPV)",
+                  "Recall (True Positive Rate, TPR)", 
+                  "True Negative Rate (TNR, Specificity)", 
+                  "False Positive Rate (FPR)", 
+                  "False Negative Rate (FNR)", 
+                  "F1 Score", 
+                  "Balanced Accuracy"),
+  Value = round(c(accuracy, precision, recall, specificity, fpr, fnr, f1_score, balanced_accuracy), 4)
 )
 
+# Print the metrics table
+kable(metrics_df, caption = "Evaluation Metrics for Classification Model")
 
-ggplot(scatter_data, aes(x = Actual, y = Predicted)) +
-  geom_jitter(width = 0.2, height = 0.2, alpha = 0.5, color = "blue") +
-  labs(
-    title = "Scatter Plot of Actual vs Predicted Values",
-    x = "Actual Response Understanding",
-    y = "Predicted Response Understanding"
-  ) +
-  theme_minimal()
+
+
+
+confusion_df <- as.data.frame(as.table(confusion_matrix))
+
+confusion_df %>%
+  kable("html", col.names = c("Reference", "Not_understood", "Understood"), 
+        caption = "Confusion Matrix for Comprehension Classification") %>%
+  kable_styling(full_width = FALSE)
 
 
 
 ```
+@tbl-comprehension-matrix-2 presents the confusion matrix for the comprehension classification model. The matrix provides the counts of correct and incorrect classifications between the "Not_understood" and "Understood" categories, highlighting how well the model performed in predicting respondent comprehension. The diagonal elements represent the correctly classified observations, while the off-diagonal elements indicate misclassifications. The matrix helps visualize the strengths and weaknesses of the model, particularly in distinguishing between respondents who understood versus those who did not.
 
+@tbl-comprehension-matrix-1 shows the evaluation metrics for the classification model. These metrics include Accuracy, Precision (Positive Predictive Value), Recall (True Positive Rate), True Negative Rate (Specificity), and F1 Score, among others. The metrics provide a comprehensive summary of the model's performance, measuring not only how many predictions were correct, but also evaluating the balance between sensitivity and specificity. The high specificity and overall accuracy indicate that the model is effective in identifying respondents who understood the questions, but the low recall suggests limitations in detecting those who did not understand.
 ## Diagnostics
 ### Validation
 ```{r}
