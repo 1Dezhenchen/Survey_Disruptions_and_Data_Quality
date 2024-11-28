@@ -79,9 +79,9 @@ cleaned_data <- cleaned_data %>% rename(
 # Step: Recode 'respondent_understood' to binary during data cleaning
 cleaned_data <- cleaned_data %>%
   mutate(respondent_understood_binary = case_when(
-    respondent_understood %in% c(1, 2, 3) ~ "Not_understood",  # 将等级 1, 2, 3 归为 "不理解"
-    respondent_understood %in% c(4, 5) ~ "Understood",         # 将等级 4, 5 归为 "理解"
-    TRUE ~ NA_character_                                       # 对缺失值保持为 NA
+    respondent_understood %in% c(1, 2, 3) ~ "Not_understood",  
+    respondent_understood %in% c(4, 5) ~ "Understood",         
+    TRUE ~ NA_character_                                       
   )) %>%
   mutate(respondent_understood_binary = as.factor(respondent_understood_binary))
 
