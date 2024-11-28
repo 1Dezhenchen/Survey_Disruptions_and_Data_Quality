@@ -536,7 +536,7 @@ Overall, the study provides actionable insights into how survey administrators c
 
 \appendix
 
-# Appendix {.unnumbered}
+# Appendix {#sec-appx}
 ## Data Cleaning Notes
 We began by importing the raw dataset using the read.csv() function from base R, with a focus on keeping the process flexible for further manual manipulation. Initially, we removed columns that contained more than 80% missing values to retain only the most relevant information for analysis.
 
@@ -571,24 +571,27 @@ By maintaining strict methodologies regarding sampling frameworks, translation p
 
 ##  Ideal Methodology
 
-For studying factors that affect respondent understanding during social surveys, an ideal methodology would involve using data from the **European Social Survey (ESS)**. The goal is to make sure we represent people from different countries across Europe fairly, considering things like age, gender, education, and location, so that our findings are accurate and reflect various social contexts.
+For studying factors that affect respondent understanding during social surveys, an ideal methodology would involve using data from the European Social Survey (ESS). The goal is to make sure we represent people from different countries across Europe fairly, considering things like age, gender, education, and location, so that our findings are accurate and reflect various social contexts.
 
-**Sampling Method**: We’ll use **stratified random sampling**, which means we’ll group people by country first, and then by characteristics like age, gender, and education within each country. This helps make sure that each group is represented well in the sample, reducing bias and making our findings more generalizable to the whole population.
+**Sampling Method**: We’ll use stratified random sampling, which means we’ll group people by country first, and then by characteristics like age, gender, and education within each country. This helps make sure that each group is represented well in the sample, reducing bias and making our findings more generalizable to the whole population.
 
-**Sample Size**: To make sure our analysis is meaningful, we plan to include at least **1,500 participants per country**. For larger and more diverse countries, we may increase this number to properly represent smaller groups.
+**Sample Size**: To make sure our analysis is meaningful, we plan to include at least 1,500 participants per country. For larger and more diverse countries, we may increase this number to properly represent smaller groups.
 
-**Data Collection Approach**: We’ll use a **mixed-method approach** for data collection, including face-to-face interviews and self-completed questionnaires to reach different types of people. Interviews will be conducted by trained local interviewers to prevent language barriers or cultural differences from affecting the data quality. We’ll also use self-administered questionnaires for follow-ups to improve the response rate among harder-to-reach groups, like younger people or those who move around frequently.
+**Data Collection Approach**: We’ll use a mixed-method approach for data collection, including face-to-face interviews and self-completed questionnaires to reach different types of people. Interviews will be conducted by trained local interviewers to prevent language barriers or cultural differences from affecting the data quality. We’ll also use self-administered questionnaires for follow-ups to improve the response rate among harder-to-reach groups, like younger people or those who move around frequently.
 
 **Survey Process and Quality Checks**: Interviewers will use standardized scripts to make sure everyone hears the questions the same way. Surveys will be recorded digitally to make data handling easier and to minimize errors. To avoid any bias, interviewers are trained to read questions in a neutral manner.
 
-**Oversampling Certain Groups**: To better understand specific impacts on comprehension, we will **oversample** some groups, like the elderly or those with lower education levels. This gives us more precise data about these groups, but we will use **weight adjustments** afterward to ensure the final dataset reflects the actual population structure.
+**Oversampling Certain Groups**: To better understand specific impacts on comprehension, we will oversample some groups, like the elderly or those with lower education levels. This gives us more precise data about these groups, but we will use weight adjustments afterward to ensure the final dataset reflects the actual population structure.
 
 **Strategies to Improve Response Rates**: We’ll use several strategies to get as many people as possible to participate:
+
 - **Multi-language Support**: Questionnaires will be available in different languages so that non-native speakers can participate.
+
 - **Follow-up Contact**: We’ll follow up with those who initially refuse or don’t respond, trying at least twice to increase participation.
+
 - **Incentives**: We’ll offer small rewards like gift cards or raffle entries to encourage people to take part.
 
-**Data Analysis and Verification**: Before analyzing, we’ll clean up the dataset, deal with missing values, and make sure demographic information is accurate. We’ll use **statistical adjustments** to correct for any missing data, and weighting will be used to ensure that our data accurately represents the population.
+**Data Analysis and Verification**: Before analyzing, we’ll clean up the dataset, deal with missing values, and make sure demographic information is accurate. We’ll use statistical adjustments to correct for any missing data, and weighting will be used to ensure that our data accurately represents the population.
 
 ### Budget Breakdown for Survey Implementation
 
@@ -614,142 +617,156 @@ By using this methodology, we aim to get reliable and fair insights into how wel
 
 
 
-##Comprehension and Interview Experience Survey*
-**Conducted by**: DEZHEN CHEN 
-**Contact**: dezhen.chen@mail.utoronto.ca
+## Idealized Survey
 
-Thank you for taking part in the Comprehension and Interview Experience Survey. Your feedback is essential in helping us understand how respondents perceive and engage with survey questions, and in improving the quality of interview interactions as well as the overall survey process.
+An example of the survey can be found at this link: <https://docs.google.com/forms/d/1BWPU4vFYpzYnkg1nzvXu9b_P12UOXFKcOh4muV7wVQ0/prefill>
 
-**An example of the survey can be found at this link**: https://docs.google.com/forms/d/1BWPU4vFYpzYnkg1nzvXu9b_P12UOXFKcOh4muV7wVQ0/prefill
+**2024 Comprehension and Interview Experience Survey**  
+**Conducted by**: DEZHEN CHEN  
+**Contact**: dezhen.chen\@mail.utoronto.ca
 
-As a small gesture of appreciation, all participants will have the opportunity to receive a $200 gift card. Ten respondents will be randomly selected to receive this gift.
+Welcome, and thank you for taking part in the **2024 Comprehension and Interview Experience Survey**. Your participation will help us understand how respondents perceive and engage with survey questions, and will improve the quality of interview interactions.
 
-Please be assured that your responses will remain completely confidential and anonymous. The data collected will be securely stored and used solely for academic and research purposes, with no personal identifying information attached to your answers.
+As a thank you for your time, all survey respondents will be automatically entered into a sweepstakes, with a **chance to win $200**. Ten winners will be selected randomly.
 
-**Please note:**
-* All responses are confidential and will be used for research purposes only.
-* This survey will take approximately 10 minutes to complete.
-* Your participation is entirely voluntary, and you may withdraw at any time.
-* All questions marked with an asterisk (*) are required.
-* There are no right or wrong answers; we appreciate your honest opinions.
+**Your responses will remain strictly confidential** and anonymous, and any data collected will be securely stored and used solely for academic and research purposes. No identifying information will be connected to your survey responses.
 
 ---
 
- **Part 1: Interviewer Details**
+## Section 1: Demographics
 
-1. **Interviewer Age**  
-   - What is the age of the interviewer?  
-   * (Please specify in years)
-
-2. **Interviewer Gender**  
-   - What is the gender of the interviewer?  
-   * Male  
-   * Female  
+**Country of Residence**:  
+Please specify your country of residence:  
+- [Your answer]
 
 ---
 
-**Part 2: Interview Process Information**
+## Section 2: Interviewer Details
 
-3. **Interview Conduct Method**  
-   - What was the method used to conduct this interview?  
-   * Face-to-face  
-   * Telephone  
-   * Online video interview  
-   * Other  
+**Interviewer Age**:  
+What is the age of the interviewer?  
+- [Please specify in years]
 
-4. **Questionnaire Language**  
-   - What language was used during the interview?  
-   * (Please specify the language)
-
-5. **Question Clarification**  
-   - Did you need clarification on the questions during the interview?  
-   * No clarification needed  
-   * Minor clarification needed  
-   * Moderate clarification needed  
-   * Extensive clarification needed  
-   * Completely unclear, repeated explanations needed  
-   * Other  
-
-6. **Respondent Understanding Level**  
-   - How well do you think the respondent understood the questions?  
-   * Fully understood  
-   * Mostly understood  
-   * Needed some clarification  
-   * Partially understood  
-   * Did not understand at all  
-
-7. **Respondent Tried Their Best**  
-   - Do you think the respondent tried their best to answer the questions?  
-   * Very unwilling to answer  
-   * Somewhat reluctant  
-   * Neutral  
-   * Willing to answer  
-   * Very willing to answer  
-   * Other  
+**Interviewer Gender**:  
+What is the gender of the interviewer?  
+1. Male  
+2. Female  
 
 ---
 
-**Part 3: Interference During Interview**
+## Section 3: Interview Process Information
 
-8. **Interference Presence**  
-   - Was there any interference during the interview process?  
-   * Yes  
-   * No  
+**Interview Conduct Method**:  
+What was the method used to conduct this interview?  
+1. Face-to-face  
+2. Telephone  
+3. Online video interview  
+4. Other  
 
-9. **Partner Interference**  
-   - Was there any interference by a partner during the interview?  
-   * Yes  
-   * No  
+**Questionnaire Language**:  
+What language was used during the interview?  
+- [Please specify the language]
 
-10. **Child Interference**  
-   - Was there any interference by children during the interview?  
-   * Yes  
-   * No  
+**Question Clarification**:  
+Did you need clarification on the questions during the interview?  
+1. No clarification needed  
+2. Minor clarification needed  
+3. Moderate clarification needed  
+4. Extensive clarification needed  
+5. Completely unclear, repeated explanations needed  
+6. Other  
 
-11. **Parent Interference**  
-   - Was there any interference by parents during the interview?  
-   * Yes  
-   * No  
+**Respondent Understanding Level**:  
+How well do you think the respondent understood the questions?  
+1. Fully understood  
+2. Mostly understood  
+3. Needed some clarification  
+4. Partially understood  
+5. Did not understand at all  
 
-12. **Relative Interference**  
-   - Was there any interference by other relatives during the interview?  
-   * Yes  
-   * No  
-
-13. **Non-relative Interference**  
-   - Was there any interference by non-relatives during the interview?  
-   * Yes  
-   * No  
-
-14. **Unknown Interference**  
-   - Was there any unknown source of interference during the interview?  
-   * Yes  
-   * No  
-
-15. **Interference Not Applicable**  
-   - Was interference not applicable during this interview?  
-   * Yes  
-   * No  
+**Respondent Tried Their Best**:  
+Do you think the respondent tried their best to answer the questions?  
+1. Very unwilling to answer  
+2. Somewhat reluctant  
+3. Neutral  
+4. Willing to answer  
+5. Very willing to answer  
+6. Other  
 
 ---
 
- **Part 4: Additional Feedback**
+## Section 4: Interference During Interview
 
-16. **Additional Comments**  
-   - Do you have any suggestions or feedback regarding the interview process? (open-ended)
+**Interference Presence**:  
+Was there any interference during the interview process?  
+1. Yes  
+2. No  
 
-17. **Interference Details**  
-   - If there was interference, could you please describe it in more detail? (open-ended)
+**Partner Interference**:  
+Was there any interference by a partner during the interview?  
+1. Yes  
+2. No  
 
-18. **Suggestions for Improvement**  
-   - Do you have any suggestions to improve the clarity or format of the questions in this survey? (open-ended)  
+**Child Interference**:  
+Was there any interference by children during the interview?  
+1. Yes  
+2. No  
+
+**Parent Interference**:  
+Was there any interference by parents during the interview?  
+1. Yes  
+2. No  
+
+**Relative Interference**:  
+Was there any interference by other relatives during the interview?  
+1. Yes  
+2. No  
+
+**Non-relative Interference**:  
+Was there any interference by non-relatives during the interview?  
+1. Yes  
+2. No  
+
+**Unknown Interference**:  
+Was there any unknown source of interference during the interview?  
+1. Yes  
+2. No  
+
+**Interference Not Applicable**:  
+Was interference not applicable during this interview?  
+1. Yes  
+2. No  
 
 ---
 
-**Thank You Message**
+## Section 5: Additional Feedback
 
+**Additional Comments**:  
+Do you have any suggestions or feedback regarding the interview process?  
+- [Please provide your comments]
+
+**Interference Details**:  
+If there was interference, could you please describe it in more detail?  
+- [Please provide your comments]
+
+**Suggestions for Improvement**:  
+Do you have any suggestions to improve the clarity or format of the questions in this survey?  
+- [Please provide your suggestions]
+
+---
+
+## Important Notes
+
+- All responses are confidential and will be used for research purposes only.
+- This survey will take approximately 10 minutes to complete.
+- Your participation is entirely voluntary, and you may withdraw at any time.
+- All questions marked with an asterisk (*) are required.
+- There are no right or wrong answers; we appreciate your honest opinions.
+
+---
+
+**Thank You Message**:  
 Thank you once again for your participation. Your feedback is invaluable in helping us improve the quality of survey interactions and comprehension. We appreciate your time and effort in completing this survey.
-
 
 
 
@@ -812,7 +829,8 @@ pp_check(first_model) +
   theme(legend.position = "bottom")+ xlim(-0.1, 1.2)
 
 ```
-In @fig-ppcheck, we implement a posterior predictive check, which displays the overlap between the observed data (denoted by \( y \)) and the replicated data generated from the model (denoted by \( y_{\text{rep}} \)). The replicated lines closely follow the shape and central trend of the observed data, particularly around the main peak at 0.9, which suggests that the model captures the overall distribution effectively. This alignment indicates that the model successfully represents the underlying data-generating process, especially in regions with high data density. While the model's performance appears strong, any visible discrepancies—particularly in areas of lower density—may highlight aspects of the data structure that are not fully captured. Addressing such discrepancies could involve refining the model by introducing additional parameters or reconsidering underlying assumptions. Overall, this comparison provides evidence that the model fits well, though there remain potential areas for enhancement to better encompass the full range of data complexities.
+In @fig-ppcheck, we implement a posterior predictive check, which displays the overlap between the observed data (denoted by $y$ and the replicated data generated from the model (denoted by $( y_{\text{rep}})$. The replicated lines closely follow the shape and central trend of the observed data, particularly around the main peak at 0.9, which suggests that the model captures the overall distribution effectively. This alignment indicates that the model successfully represents the underlying data-generating process, especially in regions with high data density. While the model's performance appears strong, any visible discrepancies—particularly in areas of lower density—may highlight aspects of the data structure that are not fully captured. Addressing such discrepancies could involve refining the model by introducing additional parameters or reconsidering underlying assumptions. Overall, this comparison provides evidence that the model fits well, though there remain potential areas for enhancement to better encompass the full range of data complexities.
+
 
 
 ## Prediction
@@ -821,10 +839,29 @@ In @fig-ppcheck, we implement a posterior predictive check, which displays the o
 #| eval: true
 #| message: false
 #| warning: false
-#| label: tbl-comprehension-matrix
+#| label: tbl-comprehension-matrix1
 #| tbl-cap: "Confusion Matrix for Comprehension Classification"
-#| tbl-subcap: ["Counts of Predictions vs Reference", "Performance Metrics Summary"]
-#| layout-ncol: 2
+
+# Confusion matrix definition
+confusion_matrix <- matrix(c(41, 36, 129, 3970), nrow = 2, byrow = TRUE,
+                           dimnames = list("Prediction" = c("Not_understood", "Understood"),
+                                           "Reference" = c("Not_understood", "Understood")))
+
+# Convert confusion matrix to data frame
+confusion_df <- as.data.frame(as.table(confusion_matrix))
+
+# Create and directly print the Markdown table using kable
+kable(confusion_df, format = "markdown")
+```
+
+```{r}
+#| echo: false
+#| eval: true
+#| message: false
+#| warning: false
+#| label: tbl-comprehension-matrix2
+#| tbl-cap: "Confusion Matrix for Comprehension Classification"
+
 analysis_data_train <- read_parquet(here::here("data/02-analysis_data/train_data.parquet"))
 analysis_data_test <- read_parquet(here::here("data/02-analysis_data/test_data.parquet"))
 factor_vars <- c("interview_conduct_method", "partner_interference", "child_interference",
@@ -848,9 +885,7 @@ analysis_data_test$predicted_class <- ifelse(predicted_prob > 0.5, "Understood",
 analysis_data_test$predicted_class <- factor(analysis_data_test$predicted_class, levels = c("Not_understood", "Understood"))
 analysis_data_test$respondent_understood_binary <- factor(analysis_data_test$respondent_understood_binary, levels = c("Not_understood", "Understood"))
 
-# Display table of prediction results
-table(analysis_data_test$predicted_class)
-table(analysis_data_test$respondent_understood_binary)
+
 
 
 confusion_matrix <- confusionMatrix(
@@ -893,25 +928,21 @@ metrics_df <- data.frame(
 )
 
 # Print the metrics table
-kable(metrics_df, caption = "Evaluation Metrics for Classification Model")
+kable(metrics_df)
 
 
 
 
-confusion_df <- as.data.frame(as.table(confusion_matrix))
-
-confusion_df %>%
-  kable("html", col.names = c("Reference", "Not_understood", "Understood"), 
-        caption = "Confusion Matrix for Comprehension Classification") %>%
-  kable_styling(full_width = FALSE)
 
 
 
 ```
-@tbl-comprehension-matrix-2 presents the confusion matrix for the comprehension classification model. The matrix provides the counts of correct and incorrect classifications between the "Not_understood" and "Understood" categories, highlighting how well the model performed in predicting respondent comprehension. The diagonal elements represent the correctly classified observations, while the off-diagonal elements indicate misclassifications. The matrix helps visualize the strengths and weaknesses of the model, particularly in distinguishing between respondents who understood versus those who did not.
+@tbl-comprehension-matrix1 presents the confusion matrix for the comprehension classification model. The matrix provides the counts of correct and incorrect classifications between the "Not_understood" and "Understood" categories, highlighting how well the model performed in predicting respondent comprehension. The diagonal elements represent the correctly classified observations, while the off-diagonal elements indicate misclassifications. The matrix helps visualize the strengths and weaknesses of the model, particularly in distinguishing between respondents who understood versus those who did not.
 
-@tbl-comprehension-matrix-1 shows the evaluation metrics for the classification model. These metrics include Accuracy, Precision (Positive Predictive Value), Recall (True Positive Rate), True Negative Rate (Specificity), and F1 Score, among others. The metrics provide a comprehensive summary of the model's performance, measuring not only how many predictions were correct, but also evaluating the balance between sensitivity and specificity. The high specificity and overall accuracy indicate that the model is effective in identifying respondents who understood the questions, but the low recall suggests limitations in detecting those who did not understand.
+@tbl-comprehension-matrix2 shows the evaluation metrics for the classification model. These metrics include Accuracy, Precision (Positive Predictive Value), Recall (True Positive Rate), True Negative Rate (Specificity), and F1 Score, among others. The metrics provide a comprehensive summary of the model's performance, measuring not only how many predictions were correct, but also evaluating the balance between sensitivity and specificity. The high specificity and overall accuracy indicate that the model is effective in identifying respondents who understood the questions, but the low recall suggests limitations in detecting those who did not understand.
+
 ## Diagnostics
+
 ### Validation
 ```{r}
 #| echo: false
@@ -978,7 +1009,4 @@ Figure @fig-loo-rhat-checks-2 is an Rhat plot, showing that all values of the Rh
 
 
 \newpage
-
-
-
 # References
