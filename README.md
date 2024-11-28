@@ -1,11 +1,4 @@
----
-title: "Factors Influencing Respondent Comprehension in Social Survey Interviews"
-editor_options: 
-  markdown: 
-    wrap: sentence
----
-
-# Starter folder
+#Factors Influencing Respondent Comprehension in Social Survey Interviews
 
 ## Overview
 
