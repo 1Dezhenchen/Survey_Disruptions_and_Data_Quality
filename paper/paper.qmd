@@ -291,7 +291,7 @@ In constructing the model, we paid particular attention to the inclusion of vari
 
 In addition to age, we included variables such as "interview conduct method," various "interference types" (e.g., "partner_interference," "child_interference"), and "interviewer characteristics" to fully encapsulate the different factors known to impact response quality. These variables were selected based on their relevance in literature, including the work of Fowler and Mangione [@fowler1990standardized], which underscores the importance of interviewer attributes and environmental conditions in shaping survey data reliability. By including such factors, our model was able to reflect a realistic and comprehensive picture of the dynamics at play during social survey interviews, thereby providing a robust framework for analyzing how disruptions influence response accuracy.
 
-### Model Set-up
+## Model Set-up
 
 Let $y_i$be the ordered categorical variable representing whether the respondent fully understood the survey questions for the $i$ -th interview. The predictors in the model include:
 
@@ -394,7 +394,7 @@ In the Bayesian logistic regression model implemented using the `rstanarm` packa
 
 We ran the model in R [@citeR] using the `rstanarm` package@rstanarm. The default priors from `rstanarm` provide an appropriate level of smoothing and regularization, making the model applicable to survey data with complex patterns while still allowing the data to reveal meaningful relationships, especially concerning factors that affect response quality.
 
-### Model justification
+## Model justification
 
 Existing research in survey methodology and social sciences suggests that factors such as interview method, the presence of disruptions during interviews, interviewer characteristics, and respondent behaviors significantly affect the quality of survey responses. In interviews with fewer disruptions, respondents are more likely to provide accurate and reliable answers. However, disruptions from various sources, such as partners, children, relatives, or even non-relatives, can compromise response quality. Additionally, interviewer characteristics—such as age and gender—may influence how comfortable respondents feel, which in turn affects the quality of their responses. The method of conducting the interview (e.g., face-to-face, phone, or self-administered) also plays a role in determining the overall effectiveness of data collection.
 
@@ -406,7 +406,7 @@ The use of Bayesian hierarchical logistic regression is further justified becaus
 
 The Bayesian hierarchical logistic regression model was fitted using our training dataset, comprising 9,743 observations and 25 variables, to estimate factors that influence whether respondents fully understood the survey questions. @tbl-summary-model presents the summary of the model's key coefficients, including posterior mean estimates and credible intervals for each parameter, providing insights into the impact of interview disruptions, interviewer characteristics, and survey methods on response quality.
 
-### Key Findings from the Coefficients
+## Key Findings from the Coefficients
 
 The analysis reveals that different types of disruptions and characteristics of the interview environment distinctly impact respondents' comprehension of survey questions. Here are some of the key findings:
 
@@ -428,7 +428,7 @@ The analysis reveals that different types of disruptions and characteristics of 
 - **Respondent Reluctance**:
   - Higher levels of **respondent reluctance** were linked to lower comprehension. Specifically, **Reluctance Level 3** had a mean effect of -0.6, suggesting that hesitance in responding is correlated with reduced response quality, possibly due to a lack of confidence or engagement on the part of the respondent.
 
-### Summary and Interpretation
+## Summary and Interpretation
 
 As illustrated in @tbl-summary-model, the summary of coefficients quantitatively elucidates the contribution of each factor to respondent comprehension of survey questions. Key observations include:
 
