@@ -291,6 +291,48 @@ In constructing the model, we paid particular attention to the inclusion of vari
 
 In addition to age, we included variables such as "interview conduct method," various "interference types" (e.g., "partner_interference," "child_interference"), and "interviewer characteristics" to fully encapsulate the different factors known to impact response quality. These variables were selected based on their relevance in literature, including the work of Fowler and Mangione [@fowler1990standardized], which underscores the importance of interviewer attributes and environmental conditions in shaping survey data reliability. By including such factors, our model was able to reflect a realistic and comprehensive picture of the dynamics at play during social survey interviews, thereby providing a robust framework for analyzing how disruptions influence response accuracy.
 
+## Alternative model
+```{r}
+first_model1 <-
+  readRDS(file = here::here("models/glmmodel.rds"))
+summary <- summary(first_model1)
+analysis_data_train <- read_parquet(here::here("data/02-analysis_data/train_data.parquet"))
+analysis_data_test <- read_parquet(here::here("data/02-analysis_data/test_data.parquet"))
+factor_vars <- c("interview_conduct_method", "partner_interference", "child_interference",
+                 "parent_interference", "relative_interference", "non_relative_interference",
+                 "country", "interviewer_gender", "question_clarification", "respondent_reluctant",
+                 "respondent_tried_best")
+
+# Iterate through factor variables and set the factor levels in test data to be consistent with train data
+for (var in factor_vars) {
+  if (is.factor(analysis_data_train[[var]])) {
+    # Set factor levels in test data to match those in train data
+    analysis_data_test[[var]] <- factor(analysis_data_test[[var]], levels = levels(analysis_data_train[[var]]))
+  }
+}
+
+# Predict probabilities and convert predicted_class to "Understood" and "Not_understood"
+predicted_prob <- predict(first_model1, newdata = analysis_data_test, type = "response")
+analysis_data_test$predicted_class <- ifelse(predicted_prob > 0.5, "Understood", "Not_understood")
+
+# Convert predicted_class and respondent_understood_binary to factors with consistent levels
+analysis_data_test$predicted_class <- factor(analysis_data_test$predicted_class, levels = c("Not_understood", "Understood"))
+analysis_data_test$respondent_understood_binary <- factor(analysis_data_test$respondent_understood_binary, levels = c("Not_understood", "Understood"))
+
+
+
+
+confusion_matrix1 <- confusionMatrix(
+  analysis_data_test$predicted_class,
+  analysis_data_test$respondent_understood_binary
+)
+
+confusion_matrix1
+```
+
+
+
+
 ## Model Set-up
 
 Let $y_i$be the ordered categorical variable representing whether the respondent fully understood the survey questions for the $i$ -th interview. The predictors in the model include:
@@ -500,6 +542,114 @@ The presence of a partner during interviews was found to negatively affect respo
 The variable interviewer_gender2 displayed a slight negative trend, implying that female interviewers might sometimes face challenges in ensuring optimal comprehension among respondents. However, the wide credible interval suggests this effect might not be statistically significant, and further data collection would be beneficial for clarification. Additionally, interview_conduct_method2 was linked to lower comprehension levels, indicating that certain interview formats, particularly those not conducted face-to-face, may reduce the clarity of communication, impacting response quality.
 
 Interestingly, interviewer_age exhibited an estimated effect near zero, with a broad credible interval, suggesting that the age of the interviewer has minimal influence on how well respondents understand the questions. Overall, the findings highlight the need to consider both the type of disruption during interviews and interviewer characteristics when assessing survey data quality. By addressing these influences, particularly by mitigating partner interference and choosing appropriate interview formats, the reliability of survey data can be significantly improved.
+
+## Prediction
+```{r}
+#| echo: false
+#| eval: true
+#| message: false
+#| warning: false
+#| label: tbl-comprehension-matrix1
+#| tbl-cap: "Confusion Matrix for Comprehension Classification"
+
+# Confusion matrix definition
+confusion_matrix <- matrix(c(41, 36, 129, 3970), nrow = 2, byrow = TRUE,
+                           dimnames = list("Prediction" = c("Not_understood", "Understood"),
+                                           "Reference" = c("Not_understood", "Understood")))
+
+# Convert confusion matrix to data frame
+confusion_df <- as.data.frame(as.table(confusion_matrix))
+
+# Create and directly print the Markdown table using kable
+kable(confusion_df, format = "markdown")
+```
+
+```{r}
+#| echo: false
+#| eval: true
+#| message: false
+#| warning: false
+#| label: tbl-comprehension-matrix2
+#| tbl-cap: "Confusion Matrix for Comprehension Classification"
+
+analysis_data_train <- read_parquet(here::here("data/02-analysis_data/train_data.parquet"))
+analysis_data_test <- read_parquet(here::here("data/02-analysis_data/test_data.parquet"))
+factor_vars <- c("interview_conduct_method", "partner_interference", "child_interference",
+                 "parent_interference", "relative_interference", "non_relative_interference",
+                 "country", "interviewer_gender", "question_clarification", "respondent_reluctant",
+                 "respondent_tried_best")
+
+# Iterate through factor variables and set the factor levels in test data to be consistent with train data
+for (var in factor_vars) {
+  if (is.factor(analysis_data_train[[var]])) {
+    # Set factor levels in test data to match those in train data
+    analysis_data_test[[var]] <- factor(analysis_data_test[[var]], levels = levels(analysis_data_train[[var]]))
+  }
+}
+
+# Predict probabilities and convert predicted_class to "Understood" and "Not_understood"
+predicted_prob <- predict(first_model, newdata = analysis_data_test, type = "response")
+analysis_data_test$predicted_class <- ifelse(predicted_prob > 0.5, "Understood", "Not_understood")
+
+# Convert predicted_class and respondent_understood_binary to factors with consistent levels
+analysis_data_test$predicted_class <- factor(analysis_data_test$predicted_class, levels = c("Not_understood", "Understood"))
+analysis_data_test$respondent_understood_binary <- factor(analysis_data_test$respondent_understood_binary, levels = c("Not_understood", "Understood"))
+
+
+
+
+confusion_matrix <- confusionMatrix(
+  analysis_data_test$predicted_class,
+  analysis_data_test$respondent_understood_binary
+)
+
+confusion_matrix
+confusion_matrix <- matrix(c(41, 36, 129, 3970), nrow = 2, byrow = TRUE,
+                           dimnames = list("Prediction" = c("Not_understood", "Understood"),
+                                           "Reference" = c("Not_understood", "Understood")))
+
+# Extract True Positive, False Positive, True Negative, and False Negative from the confusion matrix
+TP <- confusion_matrix["Not_understood", "Not_understood"]
+FP <- confusion_matrix["Not_understood", "Understood"]
+TN <- confusion_matrix["Understood", "Understood"]
+FN <- confusion_matrix["Understood", "Not_understood"]
+
+# Calculate evaluation metrics
+accuracy <- (TP + TN) / sum(confusion_matrix)
+precision <- TP / (TP + FP)
+recall <- TP / (TP + FN)
+specificity <- TN / (TN + FP)
+fpr <- FP / (FP + TN) # False Positive Rate
+fnr <- FN / (FN + TP) # False Negative Rate
+f1_score <- 2 * (precision * recall) / (precision + recall)
+balanced_accuracy <- (recall + specificity) / 2
+
+# Create a data frame for metrics
+metrics_df <- data.frame(
+  Metric_Name = c("Accuracy", 
+                  "Precision (Positive Predictive Value, PPV)",
+                  "Recall (True Positive Rate, TPR)", 
+                  "True Negative Rate (TNR, Specificity)", 
+                  "False Positive Rate (FPR)", 
+                  "False Negative Rate (FNR)", 
+                  "F1 Score", 
+                  "Balanced Accuracy"),
+  Value = round(c(accuracy, precision, recall, specificity, fpr, fnr, f1_score, balanced_accuracy), 4)
+)
+
+# Print the metrics table
+kable(metrics_df)
+
+
+
+
+
+
+
+```
+@tbl-comprehension-matrix1 presents the confusion matrix for the comprehension classification model. The matrix provides the counts of correct and incorrect classifications between the "Not_understood" and "Understood" categories, highlighting how well the model performed in predicting respondent comprehension. The diagonal elements represent the correctly classified observations, while the off-diagonal elements indicate misclassifications. The matrix helps visualize the strengths and weaknesses of the model, particularly in distinguishing between respondents who understood versus those who did not.
+
+@tbl-comprehension-matrix2 shows the evaluation metrics for the classification model. These metrics include Accuracy, Precision (Positive Predictive Value), Recall (True Positive Rate), True Negative Rate (Specificity), and F1 Score, among others. The metrics provide a comprehensive summary of the model's performance, measuring not only how many predictions were correct, but also evaluating the balance between sensitivity and specificity. The high specificity and overall accuracy indicate that the model is effective in identifying respondents who understood the questions, but the low recall suggests limitations in detecting those who did not understand.
 
 # Discussion {#sec-discussion}
 
@@ -837,113 +987,6 @@ In @fig-ppcheck, we implement a posterior predictive check, which displays the o
 
 
 
-## Prediction
-```{r}
-#| echo: false
-#| eval: true
-#| message: false
-#| warning: false
-#| label: tbl-comprehension-matrix1
-#| tbl-cap: "Confusion Matrix for Comprehension Classification"
-
-# Confusion matrix definition
-confusion_matrix <- matrix(c(41, 36, 129, 3970), nrow = 2, byrow = TRUE,
-                           dimnames = list("Prediction" = c("Not_understood", "Understood"),
-                                           "Reference" = c("Not_understood", "Understood")))
-
-# Convert confusion matrix to data frame
-confusion_df <- as.data.frame(as.table(confusion_matrix))
-
-# Create and directly print the Markdown table using kable
-kable(confusion_df, format = "markdown")
-```
-
-```{r}
-#| echo: false
-#| eval: true
-#| message: false
-#| warning: false
-#| label: tbl-comprehension-matrix2
-#| tbl-cap: "Confusion Matrix for Comprehension Classification"
-
-analysis_data_train <- read_parquet(here::here("data/02-analysis_data/train_data.parquet"))
-analysis_data_test <- read_parquet(here::here("data/02-analysis_data/test_data.parquet"))
-factor_vars <- c("interview_conduct_method", "partner_interference", "child_interference",
-                 "parent_interference", "relative_interference", "non_relative_interference",
-                 "country", "interviewer_gender", "question_clarification", "respondent_reluctant",
-                 "respondent_tried_best")
-
-# Iterate through factor variables and set the factor levels in test data to be consistent with train data
-for (var in factor_vars) {
-  if (is.factor(analysis_data_train[[var]])) {
-    # Set factor levels in test data to match those in train data
-    analysis_data_test[[var]] <- factor(analysis_data_test[[var]], levels = levels(analysis_data_train[[var]]))
-  }
-}
-
-# Predict probabilities and convert predicted_class to "Understood" and "Not_understood"
-predicted_prob <- predict(first_model, newdata = analysis_data_test, type = "response")
-analysis_data_test$predicted_class <- ifelse(predicted_prob > 0.5, "Understood", "Not_understood")
-
-# Convert predicted_class and respondent_understood_binary to factors with consistent levels
-analysis_data_test$predicted_class <- factor(analysis_data_test$predicted_class, levels = c("Not_understood", "Understood"))
-analysis_data_test$respondent_understood_binary <- factor(analysis_data_test$respondent_understood_binary, levels = c("Not_understood", "Understood"))
-
-
-
-
-confusion_matrix <- confusionMatrix(
-  analysis_data_test$predicted_class,
-  analysis_data_test$respondent_understood_binary
-)
-
-
-confusion_matrix <- matrix(c(41, 36, 129, 3970), nrow = 2, byrow = TRUE,
-                           dimnames = list("Prediction" = c("Not_understood", "Understood"),
-                                           "Reference" = c("Not_understood", "Understood")))
-
-# Extract True Positive, False Positive, True Negative, and False Negative from the confusion matrix
-TP <- confusion_matrix["Not_understood", "Not_understood"]
-FP <- confusion_matrix["Not_understood", "Understood"]
-TN <- confusion_matrix["Understood", "Understood"]
-FN <- confusion_matrix["Understood", "Not_understood"]
-
-# Calculate evaluation metrics
-accuracy <- (TP + TN) / sum(confusion_matrix)
-precision <- TP / (TP + FP)
-recall <- TP / (TP + FN)
-specificity <- TN / (TN + FP)
-fpr <- FP / (FP + TN) # False Positive Rate
-fnr <- FN / (FN + TP) # False Negative Rate
-f1_score <- 2 * (precision * recall) / (precision + recall)
-balanced_accuracy <- (recall + specificity) / 2
-
-# Create a data frame for metrics
-metrics_df <- data.frame(
-  Metric_Name = c("Accuracy", 
-                  "Precision (Positive Predictive Value, PPV)",
-                  "Recall (True Positive Rate, TPR)", 
-                  "True Negative Rate (TNR, Specificity)", 
-                  "False Positive Rate (FPR)", 
-                  "False Negative Rate (FNR)", 
-                  "F1 Score", 
-                  "Balanced Accuracy"),
-  Value = round(c(accuracy, precision, recall, specificity, fpr, fnr, f1_score, balanced_accuracy), 4)
-)
-
-# Print the metrics table
-kable(metrics_df)
-
-
-
-
-
-
-
-```
-@tbl-comprehension-matrix1 presents the confusion matrix for the comprehension classification model. The matrix provides the counts of correct and incorrect classifications between the "Not_understood" and "Understood" categories, highlighting how well the model performed in predicting respondent comprehension. The diagonal elements represent the correctly classified observations, while the off-diagonal elements indicate misclassifications. The matrix helps visualize the strengths and weaknesses of the model, particularly in distinguishing between respondents who understood versus those who did not.
-
-@tbl-comprehension-matrix2 shows the evaluation metrics for the classification model. These metrics include Accuracy, Precision (Positive Predictive Value), Recall (True Positive Rate), True Negative Rate (Specificity), and F1 Score, among others. The metrics provide a comprehensive summary of the model's performance, measuring not only how many predictions were correct, but also evaluating the balance between sensitivity and specificity. The high specificity and overall accuracy indicate that the model is effective in identifying respondents who understood the questions, but the low recall suggests limitations in detecting those who did not understand.
 
 ## Diagnostics
 
