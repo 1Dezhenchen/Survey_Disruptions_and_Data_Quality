@@ -34,12 +34,31 @@ model <-
 
 summary(model)
 
-
-
 #### Save model ####
 saveRDS(
   model,
   file = "models/model.rds"
+)
+
+model1 <- glm(
+  formula = respondent_understood_binary ~ interview_conduct_method + 
+    partner_interference + child_interference + parent_interference + 
+    relative_interference + non_relative_interference + interviewer_age + 
+    interviewer_gender + as.factor(country) + question_clarification + 
+    respondent_reluctant + respondent_tried_best,
+  data = analysis_data_train,
+  family = binomial()
+)
+
+summary(model1)
+
+
+
+
+#### Save model ####
+saveRDS(
+  model1,
+  file = "models/glmmodel.rds"
 )
 
 
