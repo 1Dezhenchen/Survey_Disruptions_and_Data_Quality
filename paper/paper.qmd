@@ -292,7 +292,7 @@ After filtering and processing, the final dataset consists of **9,743 observatio
 # Model {#sec-model}
 In constructing the model, we paid particular attention to the inclusion of variables that directly impact the quality of survey responses, as well as those that provide critical context for respondent behavior. The choice to include "age" as a continuous variable rather than categorizing it into broad groups was a deliberate decision aimed at preserving the granularity of the data. This approach allowed us to capture more nuanced relationships between age and response quality, rather than assuming uniform effects within age brackets. By modeling age continuously, we were able to better detect subtle patterns or non-linear effects that would have otherwise been obscured by arbitrary group boundaries, ensuring a more precise analysis of its influence on both interviewer and respondent dynamics.
 
-In addition to age, we included variables such as "interview conduct method," various "interference types" (e.g., "partner_interference," "child_interference"), and "interviewer characteristics" to fully encapsulate the different factors known to impact response quality. These variables were selected based on their relevance in literature, including the work of Fowler and Mangione [@fowler1990standardized], which underscores the importance of interviewer attributes and environmental conditions in shaping survey data reliability. By including such factors, our model was able to reflect a realistic and comprehensive picture of the dynamics at play during social survey interviews, thereby providing a robust framework for analyzing how disruptions influence response accuracy.
+In addition to age, we included variables such as "interview conduct method," various "interference types" (e.g., "partner_interference," "child_interference"), and "interviewer characteristics" to fully encapsulate the different factors known to impact response quality. These variables were selected based on their relevance in literature, including the work of Fowler and Mangione [@aquilino1993effects], which underscores the importance of interviewer attributes and environmental conditions in shaping survey data reliability. By including such factors, our model was able to reflect a realistic and comprehensive picture of the dynamics at play during social survey interviews, thereby providing a robust framework for analyzing how disruptions influence response accuracy.
 
 ## Alternative model
 After evaluating both the decision tree model [@tbl-comprehension-matrix13] and the Bayesian GLM [@tbl-comprehension-matrix12] for classifying comprehension outcomes, a clear distinction in performance emerged. While the decision tree model demonstrated superior sensitivity and balanced accuracy in identifying the minority class, "Not_understood," the Bayesian GLM consistently achieved higher overall accuracy, with a score of 96.05% compared to the decision tree's 95.98%.
@@ -322,7 +322,6 @@ confusion_matrix1 <- confusionMatrix(
   analysis_data_test$respondent_understood_binary
 )
 
-confusion_matrix1
 
 confusion_matrix_tree <- confusionMatrix(
   analysis_data_test$predicted_class,
