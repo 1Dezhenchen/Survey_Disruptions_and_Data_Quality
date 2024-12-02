@@ -89,19 +89,11 @@ simulated_interview_data <- tibble(
   intnum = sample(1000:9999, num_obs, replace = TRUE)
 )
 
-#### Save data ####
-# Define the output folder
-output_folder <- "starter_folder-main 2/data/00-simulated_data"
 
-# Create the folder if it doesn't exist
-if (!dir.exists(output_folder)) {
-  dir.create(output_folder, recursive = TRUE)
-}
 
 
 # Save the data to the correct location
-write_csv(simulated_interview_data, file.path(output_folder, "simulated_interview_data.csv"))
-
+write_csv(simulated_interview_data, "data/00-simulated_data/simulated_data.csv")
 
 
 
