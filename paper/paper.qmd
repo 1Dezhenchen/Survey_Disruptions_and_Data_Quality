@@ -30,6 +30,7 @@ library(car)
 library(loo)
 library(modelsummary)
 library(caret)
+library(rpart)  
 ```
 
 # Introduction {#sec-intro}
@@ -86,6 +87,8 @@ The following R packages were utilized to facilitate and streamline the data ana
 - **modelsummary** [@modelsummary]: Summarizes statistical models in a clear, tabular format, supporting the communication of regression and other model results.
 
 - **caret** [@caret]: Provides a unified interface for training and tuning machine learning models, offering numerous functions for preprocessing data, feature selection, model training, and performance evaluation, which streamline the process of creating predictive models.
+
+- **rpart** [@rpart]: A comprehensive package for building recursive partitioning models, commonly used for creating decision trees. Particularly valuable for classification and regression tasks, it supports model visualization and interpretation, offering control over tree complexity and pruning for enhanced model performance.
 
 
 - **_Telling Stories with Data_** [@tellingstories]: This book was referenced for its code and methodologies in presenting data and statistical information.
@@ -292,35 +295,27 @@ In constructing the model, we paid particular attention to the inclusion of vari
 In addition to age, we included variables such as "interview conduct method," various "interference types" (e.g., "partner_interference," "child_interference"), and "interviewer characteristics" to fully encapsulate the different factors known to impact response quality. These variables were selected based on their relevance in literature, including the work of Fowler and Mangione [@fowler1990standardized], which underscores the importance of interviewer attributes and environmental conditions in shaping survey data reliability. By including such factors, our model was able to reflect a realistic and comprehensive picture of the dynamics at play during social survey interviews, thereby providing a robust framework for analyzing how disruptions influence response accuracy.
 
 ## Alternative model
+After evaluating both the decision tree model [@tbl-comprehension-matrix13] and the Bayesian GLM [@tbl-comprehension-matrix12] for classifying comprehension outcomes, a clear distinction in performance emerged. While the decision tree model demonstrated superior sensitivity and balanced accuracy in identifying the minority class, "Not_understood," the Bayesian GLM consistently achieved higher overall accuracy, with a score of 96.05% compared to the decision tree's 95.98%.
+
+Although the difference in accuracy is modest, the Bayesian GLM aligns more closely with the overarching objective of optimizing predictive performance across all classes. Furthermore, the Bayesian GLM's probabilistic framework provides a nuanced interpretation of predictions, capturing uncertainty and enabling more robust decision-making. Therefore, despite the decision tree's relative strength in minority class detection, the Bayesian GLM was selected as the final model due to its superior overall accuracy and its ability to provide a more balanced representation of both majority and minority classes. 
 ```{r}
-first_model1 <-
-  readRDS(file = here::here("models/glmmodel.rds"))
-summary <- summary(first_model1)
+#| echo: false
+#| eval: true
+#| message: false
+#| warning: false
+#| label: tbl-comprehension-matrix13
+#| tbl-cap: "Confusion Matrix for Comprehension Classification Using Decision Tree"
+
 analysis_data_train <- read_parquet(here::here("data/02-analysis_data/train_data.parquet"))
 analysis_data_test <- read_parquet(here::here("data/02-analysis_data/test_data.parquet"))
-factor_vars <- c("interview_conduct_method", "partner_interference", "child_interference",
-                 "parent_interference", "relative_interference", "non_relative_interference",
-                 "country", "interviewer_gender", "question_clarification", "respondent_reluctant",
-                 "respondent_tried_best")
+ tree_model<-
+  readRDS(file = here::here("models/treemodel.rds"))
 
-# Iterate through factor variables and set the factor levels in test data to be consistent with train data
-for (var in factor_vars) {
-  if (is.factor(analysis_data_train[[var]])) {
-    # Set factor levels in test data to match those in train data
-    analysis_data_test[[var]] <- factor(analysis_data_test[[var]], levels = levels(analysis_data_train[[var]]))
-  }
-}
+analysis_data_test$respondent_understood_binary <- as.factor(analysis_data_test$respondent_understood_binary)
 
-# Predict probabilities and convert predicted_class to "Understood" and "Not_understood"
-predicted_prob <- predict(first_model1, newdata = analysis_data_test, type = "response")
-analysis_data_test$predicted_class <- ifelse(predicted_prob > 0.5, "Understood", "Not_understood")
+predicted_class <- predict(tree_model, newdata = analysis_data_test, type = "class")
 
-# Convert predicted_class and respondent_understood_binary to factors with consistent levels
-analysis_data_test$predicted_class <- factor(analysis_data_test$predicted_class, levels = c("Not_understood", "Understood"))
-analysis_data_test$respondent_understood_binary <- factor(analysis_data_test$respondent_understood_binary, levels = c("Not_understood", "Understood"))
-
-
-
+analysis_data_test$predicted_class <- predicted_class
 
 confusion_matrix1 <- confusionMatrix(
   analysis_data_test$predicted_class,
@@ -328,7 +323,40 @@ confusion_matrix1 <- confusionMatrix(
 )
 
 confusion_matrix1
+
+confusion_matrix_tree <- confusionMatrix(
+  analysis_data_test$predicted_class,
+  analysis_data_test$respondent_understood_binary
+)
+
+
+confusion_df <- as.data.frame(as.table(confusion_matrix_tree$table))
+kable(confusion_df, format = "markdown", col.names = c("Prediction", "Reference", "Freq"))
+
+
+
 ```
+
+```{r}
+#| echo: false
+#| eval: true
+#| message: false
+#| warning: false
+#| label: tbl-comprehension-matrix12
+#| tbl-cap: "Confusion Matrix for Comprehension Classification1"
+
+# Confusion matrix definition
+confusion_matrix <- matrix(c(41, 36, 129, 3970), nrow = 2, byrow = TRUE,
+                           dimnames = list("Prediction" = c("Not_understood", "Understood"),
+                                           "Reference" = c("Not_understood", "Understood")))
+
+# Convert confusion matrix to data frame
+confusion_df <- as.data.frame(as.table(confusion_matrix))
+
+# Create and directly print the Markdown table using kable
+kable(confusion_df, format = "markdown")
+```
+
 
 
 
@@ -550,7 +578,7 @@ Interestingly, interviewer_age exhibited an estimated effect near zero, with a b
 #| message: false
 #| warning: false
 #| label: tbl-comprehension-matrix1
-#| tbl-cap: "Confusion Matrix for Comprehension Classification"
+#| tbl-cap: "Confusion Matrix for Comprehension Classification1"
 
 # Confusion matrix definition
 confusion_matrix <- matrix(c(41, 36, 129, 3970), nrow = 2, byrow = TRUE,
@@ -571,7 +599,6 @@ kable(confusion_df, format = "markdown")
 #| warning: false
 #| label: tbl-comprehension-matrix2
 #| tbl-cap: "Confusion Matrix for Comprehension Classification"
-
 analysis_data_train <- read_parquet(here::here("data/02-analysis_data/train_data.parquet"))
 analysis_data_test <- read_parquet(here::here("data/02-analysis_data/test_data.parquet"))
 factor_vars <- c("interview_conduct_method", "partner_interference", "child_interference",
@@ -603,7 +630,6 @@ confusion_matrix <- confusionMatrix(
   analysis_data_test$respondent_understood_binary
 )
 
-confusion_matrix
 confusion_matrix <- matrix(c(41, 36, 129, 3970), nrow = 2, byrow = TRUE,
                            dimnames = list("Prediction" = c("Not_understood", "Understood"),
                                            "Reference" = c("Not_understood", "Understood")))
@@ -647,9 +673,9 @@ kable(metrics_df)
 
 
 ```
-@tbl-comprehension-matrix1 presents the confusion matrix for the comprehension classification model. The matrix provides the counts of correct and incorrect classifications between the "Not_understood" and "Understood" categories, highlighting how well the model performed in predicting respondent comprehension. The diagonal elements represent the correctly classified observations, while the off-diagonal elements indicate misclassifications. The matrix helps visualize the strengths and weaknesses of the model, particularly in distinguishing between respondents who understood versus those who did not.
+@tbl-comprehension-matrix1 provides a summary of the model's prediction outcomes for the comprehension classification task. The table displays the frequencies of correct and incorrect predictions across the "Not_understood" and "Understood" categories. Correct classifications occur when the predicted and actual labels align (e.g., "Not_understood" predicted as "Not_understood"), while mismatches are shown as incorrect classifications (e.g., "Not_understood" predicted as "Understood"). This representation effectively highlights the model's ability to distinguish between the two classes, particularly its challenges in identifying the minority "Not_understood" category due to its smaller sample size.
 
-@tbl-comprehension-matrix2 shows the evaluation metrics for the classification model. These metrics include Accuracy, Precision (Positive Predictive Value), Recall (True Positive Rate), True Negative Rate (Specificity), and F1 Score, among others. The metrics provide a comprehensive summary of the model's performance, measuring not only how many predictions were correct, but also evaluating the balance between sensitivity and specificity. The high specificity and overall accuracy indicate that the model is effective in identifying respondents who understood the questions, but the low recall suggests limitations in detecting those who did not understand.
+@tbl-comprehension-matrix2 presents key performance metrics for evaluating the classification model. Metrics such as Accuracy, Precision (Positive Predictive Value), Recall (True Positive Rate), Specificity (True Negative Rate), F1 Score, and Balanced Accuracy provide a detailed view of the model's strengths and limitations. The high Accuracy and Specificity values demonstrate the model's reliability in correctly classifying the majority "Understood" category. In contrast, the lower Recall for the "Not_understood" class indicates difficulties in detecting this minority group. These metrics offer a well-rounded understanding of the model's performance, balancing its effectiveness in majority class classification with areas for improvement in minority class sensitivity.
 
 # Discussion {#sec-discussion}
 
