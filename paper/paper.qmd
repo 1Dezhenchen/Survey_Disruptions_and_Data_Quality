@@ -9,6 +9,7 @@ date-format: long
 abstract: "In social surveys, disruptions during interviews can profoundly impact the quality of respondent data, thereby affecting the overall reliability of survey results. This study employs Bayesian hierarchical logistic regression to analyze the influence of a diverse range of factors—including the type of disruption, presence of family members, interview methodology, interviewer characteristics, and respondent attitudes—on response quality and accuracy. Our findings indicate that various forms of disruptions uniquely impact data quality, with some conditions proving more detrimental than others. These insights are pivotal for refining survey methodologies and optimizing interview conditions, ultimately improving the reliability and validity of collected data."
 format: pdf
 number-sections: true
+toc: true
 bibliography: references.bib
 ---
 
