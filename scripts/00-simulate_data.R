@@ -11,73 +11,93 @@
 library(tidyverse)
 library(janitor)
 
-#### Simulate data ####
+#### Simulate full data with interactions ####
 # Set seed for reproducibility
 set.seed(42)
 
 # Define the number of observations
 num_obs <- 1000
 
-# Create a tibble with simulated data for interviews
+# Create a tibble with simulated data
 simulated_interview_data <- tibble(
-  # Simulate interview condition (how it was conducted)
-  vdcond = sample(c("face-to-face", "telephone", "online"), 
-                  num_obs, replace = TRUE),
+  # Simulate respondent's gender (1: male, 2: female)
+  intgndr = sample(c(1, 2), num_obs, replace = TRUE),
   
-  # Simulate respondent's willingness to answer (1: willing, 2: reluctant)
-  resrelq = sample(1:2, num_obs, replace = TRUE),
+  # Simulate respondent's age based on gender
+  intagea = ifelse(
+    intgndr == 1,
+    round(rnorm(num_obs, mean = 50, sd = 10)), # Males: mean 50, sd 10
+    round(rnorm(num_obs, mean = 45, sd = 12))  # Females: mean 45, sd 12
+  ),
   
-  # Simulate whether there were any interferences during the interview
-  preinf = sample(c("none", "spouse", "child", "parent", "other"), 
-                  num_obs, replace = TRUE),
+  # Simulate interview condition (depends on age group)
+  vdcond = ifelse(
+    intagea < 40,
+    sample(c("online", "telephone"), num_obs, replace = TRUE, prob = c(0.7, 0.3)),
+    sample(c("face-to-face", "telephone"), num_obs, replace = TRUE, prob = c(0.6, 0.4))
+  ),
   
-  # Simulate respondent's age
-  intagea = sample(18:80, num_obs, replace = TRUE),
+  # Simulate respondent's willingness to answer (depends on age and gender)
+  resclq = ifelse(
+    intgndr == 1 & intagea > 50,
+    sample(1:3, num_obs, replace = TRUE, prob = c(0.2, 0.5, 0.3)), # Male and older
+    sample(1:3, num_obs, replace = TRUE, prob = c(0.5, 0.3, 0.2))  # Others
+  ),
   
-  # Simulate respondent's gender
-  intgndr = sample(c("male", "female"), num_obs, replace = TRUE),
+  # Simulate production date
+  proddate = sample(seq(as.Date('2022-01-01'), as.Date('2024-12-31'), by = "day"), num_obs, replace = TRUE),
   
-  # Simulate whether the respondent understood the question (1: yes, 0: no)
-  resundq = sample(0:1, num_obs, replace = TRUE),
-  
-  # Simulate if respondent tried to answer questions to the best of ability (1: yes, 0: no)
-  resbab = sample(0:1, num_obs, replace = TRUE),
-  
-  # Simulate the production date of the data
-  proddate = sample(seq(as.Date('2022-01-01'), as.Date('2024-12-31'), by="day"), num_obs, replace = TRUE),
-  
-  # Simulate the country conducting the interview
+  # Simulate country conducting the interview
   cntry = sample(c("AT", "BE", "CH", "DE", "DK", "ES", "FI", "FR", "GB", "IE", "IT", "NL", "NO", "PT", "SE"), 
                  num_obs, replace = TRUE),
   
-  # Simulate the respondent's identification number
+  # Simulate respondent's identification number
   idno = sample(10000:99999, num_obs, replace = TRUE),
   
-  # Simulate if anyone interfered with the interview (1: yes, 0: no)
-  prewhp = sample(0:1, num_obs, replace = TRUE),
-  presd = sample(0:1, num_obs, replace = TRUE),
-  preppil = sample(0:1, num_obs, replace = TRUE),
-  preorel = sample(0:1, num_obs, replace = TRUE),
-  prenrel = sample(0:1, num_obs, replace = TRUE),
-  predk = sample(0:1, num_obs, replace = TRUE),
-  prenap = sample(0:1, num_obs, replace = TRUE),
-  prena = sample(0:1, num_obs, replace = TRUE),
+  # Simulate if there was interference during the interview
+  prewhp = sample(0:1, num_obs, replace = TRUE, prob = c(0.8, 0.2)),
+  presd = sample(0:1, num_obs, replace = TRUE, prob = c(0.9, 0.1)),
+  preppil = sample(0:1, num_obs, replace = TRUE, prob = c(0.85, 0.15)),
+  preorel = sample(0:1, num_obs, replace = TRUE, prob = c(0.9, 0.1)),
+  prenrel = sample(0:1, num_obs, replace = TRUE, prob = c(0.7, 0.3)),
+  predk = sample(0:1, num_obs, replace = TRUE, prob = c(0.95, 0.05)),
+  prenap = sample(0:1, num_obs, replace = TRUE, prob = c(0.6, 0.4)),
+  prena = sample(0:1, num_obs, replace = TRUE, prob = c(0.8, 0.2)),
   
-  # Simulate interview questionnaire language
-  intlnga = sample(c("ENG", "GER", "FRE", "SPA", "ITA", "NOR"), num_obs, replace = TRUE),
+  # Simulate understanding of the question (depends on willingness and condition)
+  resundq = ifelse(
+    vdcond == "face-to-face" & resclq == 1,
+    1, # Face-to-face and most willing
+    sample(0:1, num_obs, replace = TRUE, prob = c(0.4, 0.6))
+  ),
+  
+  # Simulate effort to answer (depends on understanding)
+  resbab = ifelse(
+    resundq == 1,
+    sample(0:1, num_obs, replace = TRUE, prob = c(0.3, 0.7)), # Tried harder if understood
+    sample(0:1, num_obs, replace = TRUE, prob = c(0.7, 0.3))
+  ),
+  
+  # Simulate interview language (depends on country)
+  intlnga = ifelse(
+    cntry %in% c("DE", "AT", "CH"), "GER",
+    ifelse(cntry %in% c("FR", "BE"), "FRE",
+           ifelse(cntry %in% c("ES", "PT"), "SPA", "ENG"))
+  ),
   
   # Simulate interviewer's identification number
   intnum = sample(1000:9999, num_obs, replace = TRUE)
 )
 
 #### Save data ####
-# Define the correct folder inside starter_folder-main 2
+# Define the output folder
 output_folder <- "starter_folder-main 2/data/00-simulated_data"
 
 # Create the folder if it doesn't exist
 if (!dir.exists(output_folder)) {
   dir.create(output_folder, recursive = TRUE)
 }
+
 
 # Save the data to the correct location
 write_csv(simulated_interview_data, file.path(output_folder, "simulated_interview_data.csv"))
