@@ -15,6 +15,8 @@ library(rstanarm)
 library(arrow)
 library(car)
 library(brms)
+library(rpart)  
+
 
 #### Read data ####
 analysis_data_train <- read_parquet("data/02-analysis_data/train_data.parquet")
@@ -40,25 +42,25 @@ saveRDS(
   file = "models/model.rds"
 )
 
-model1 <- glm(
+tree_model <- rpart(
   formula = respondent_understood_binary ~ interview_conduct_method + 
     partner_interference + child_interference + parent_interference + 
     relative_interference + non_relative_interference + interviewer_age + 
     interviewer_gender + as.factor(country) + question_clarification + 
     respondent_reluctant + respondent_tried_best,
   data = analysis_data_train,
-  family = binomial()
+  method = "class"  # 分类任务
 )
 
-summary(model1)
 
+summary(tree_model)
 
 
 
 #### Save model ####
 saveRDS(
-  model1,
-  file = "models/glmmodel.rds"
+  tree_model,
+  file = "models/treemodel.rds"
 )
 
 
