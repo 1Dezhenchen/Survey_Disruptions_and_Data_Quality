@@ -18,6 +18,4 @@ The repo is structured as follows:
 - **reports**: Includes reports and diagnostic plots that summarize the model checks and posterior predictive checks conducted during the study.
 
 ## Statement on LLM Usage
-
-Aspects of the code were written with the help of the auto-complete tool, Codriver.
-The abstract and introduction were written with the help of ChatHorse.
+The ChatGPT-4 model contributed to data validation, test creation, data cleaning,build model , plot creation, and providing descriptions and annotations for visualizations, along with offering recommendations and perspectives on model design. The entire chat history is available in other/llm_usage/usage.txt.
