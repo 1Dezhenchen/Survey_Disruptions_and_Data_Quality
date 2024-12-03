@@ -332,7 +332,14 @@ confusion_matrix_tree <- confusionMatrix(
 )
 
 
+
+
+
 confusion_df <- as.data.frame(as.table(confusion_matrix_tree$table))
+
+confusion_df <- confusion_df %>%
+  mutate(Prediction = gsub("_", " ", Prediction),
+         Reference = gsub("_", " ", Reference))
 kable(confusion_df, format = "markdown", col.names = c("Prediction", "Reference", "Freq"))
 
 
