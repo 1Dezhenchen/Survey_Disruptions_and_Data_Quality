@@ -1,4 +1,4 @@
-#Factors Influencing Respondent Comprehension in Social Survey Interviews
+# Factors Influencing Respondent Comprehension in Social Survey Interviews
 
 ## Overview
 
@@ -9,12 +9,13 @@ The repository includes all necessary scripts for data preparation, model analys
 ## File Structure
 
 The repo is structured as follows: 
+- **data/00-simulated_data**: Contains simulated datasets created to test and validate the modeling pipeline. These datasets mimic realistic survey conditions and include disruptions, respondent demographics, and other relevant variables.
 - **data/01-raw_data**: Contains the raw dataset from the European Social Survey, including data on respondent demographics and interview circumstances.
 - **data/02-clean_data**: Contains the cleaned dataset, prepared for analysis after performing variable recoding and addressing missing values.
 - **model**: Includes fitted Bayesian logistic regression models that examine respondent comprehension.
 - **paper**: Contains the Quarto files used for generating the paper, along with all references and supplementary materials.
 - **scripts**: Contains R scripts for data cleaning, model fitting, diagnostics, and visualization.
-- **reports**: Includes reports and diagnostics plots that summarize the model checks and posterior predictive checks conducted during the study.
+- **reports**: Includes reports and diagnostic plots that summarize the model checks and posterior predictive checks conducted during the study.
 
 ## Statement on LLM Usage
 
