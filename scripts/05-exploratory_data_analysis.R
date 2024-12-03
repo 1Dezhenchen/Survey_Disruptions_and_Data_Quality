@@ -96,15 +96,5 @@ ggplot(analysis_data, aes(x = respondent_tried_best, fill = as.factor(interferen
 
 
 
-ggplot(analysis_data, aes(x = respondent_tried_best, fill = respondent_understood_binary)) +
-  geom_bar(position = "fill") +
-  scale_fill_manual(values = c("#619CFF", "#F8766D")) +
-  labs(
-    title = "Bar Plot of Response Understanding by Respondent Tried Best",
-    x = "Respondent Tried Best",
-    y = "Proportion",
-    fill = "Response Understanding"
-  ) +
-  theme_minimal()
 
 
