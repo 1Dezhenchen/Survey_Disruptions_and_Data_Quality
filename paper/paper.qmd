@@ -36,7 +36,7 @@ library(rpart)
 
 # Introduction {#sec-intro}
 
-In recent years, the quality and reliability of data collected through social surveys have garnered increasing attention, especially considering how various forms of disruption may influence respondents’ behavior and, subsequently, the quality of survey responses. Social surveys are indispensable tools for obtaining observations into societal trends, guiding public policy, and informing evidence-based decision-making. Thus, ensuring the robustness of data collected from these surveys has implications for the accuracy of the conclusions drawn and for the effective formulation of policy measures. Previous research has made significant strides in understanding factors that impact survey data quality. For example, Groves et al. [@groves2011survey] investigated the influence of interviewer characteristics—such as demeanor, experience, and communication style—on the quality of data obtained, employing a multi-level modeling approach to assess these refined dynamics. Similarly, Couper and de Leeuw [@massey2013we] explored how the survey mode (e.g., in-person versus telephone) affects respondent comfort and attentiveness, highlighting that face-to-face interviews often elicit more thorough responses due to the availability of visual cues. In another significant contribution, Fowler and Mangione [@aquilino1993effects] analyzed the impact of third-party presence during interviews, finding that interruptions can lead to response biases, thereby compromising data integrity. Despite these advances, there remains a clear gap that needs to be filled: the distinct effects of different types of disruptions—specifically those involving family members or occurring due to environmental factors—on respondent comprehension and the overall quality of responses have not yet been systematically explored. Addressing this gap is paramount to improving the reliability of survey data, particularly in settings where such disruptions are unavoidable.
+In recent years, the quality and reliability of data collected through social surveys have garnered increasing attention, especially considering how various forms of disruption may influence respondents’ behavior and, subsequently, the quality of survey responses. Social surveys are indispensable tools for obtaining observations into societal trends, guiding public policy, and informing evidence-based decision-making. Thus, ensuring the robustness of data collected from these surveys has implications for the accuracy of the conclusions drawn and for the effective formulation of policy measures. Previous research has made significant strides in understanding factors that impact survey data quality. For example, Groves et al. [@groves2011survey].investigated the influence of interviewer characteristics—such as demeanor, experience, and communication style—on the quality of data obtained, employing a multi-level modeling approach to assess these refined dynamics. Similarly, Couper and de Leeuw [@massey2013we].explored how the survey mode (e.g., in-person versus telephone) affects respondent comfort and attentiveness, highlighting that face-to-face interviews often elicit more thorough responses due to the availability of visual cues. In another significant contribution, Fowler and Mangione [@aquilino1993effects]. analyzed the impact of third-party presence during interviews, finding that interruptions can lead to response biases, thereby compromising data integrity. Despite these advances, there remains a clear gap that needs to be filled: the distinct effects of different types of disruptions—specifically those involving family members or occurring due to environmental factors—on respondent comprehension and the overall quality of responses have not yet been systematically explored. Addressing this gap is paramount to improving the reliability of survey data, particularly in settings where such disruptions are unavoidable.
 
 This research seeks to fill this gap by systematically investigating the role of various disruptions during social survey interviews, focusing particularly on how different types of familial and environmental interferences affect respondent comprehension and engagement. To this end, we conducted a holistic analysis using Bayesian hierarchical logistic regression, implemented through the rstanarm package in R. This model structure was chosen for its ability to capture complex relationships, accounting for multiple levels of influence—namely, disruptions at the respondent level and interviewer characteristics nested within the survey context. The use of Bayesian methods allowed us to incorporate prior knowledge and manage uncertainty in the analysis effectively, while also making inferences about the likely impacts of the disruptions on data quality. 
 
@@ -55,7 +55,7 @@ The dataset for this study is sourced from the [European Social Survey](https://
 
 
 ## Overview
-We utilized the statistical programming language R [@citeR] to prepare, analyze, and visualize the survey data. This study focuses on understanding how interview disruptions affect response quality by examining variables related to both interviewer and respondent characteristics. The structured design of the dataset allowed for a thorough exploration of contextual disruptions and their influence on data reliability, providing valuable insights for enhancing survey methodologies.
+We utilized the statistical programming language R [@citeR]. to prepare, analyze, and visualize the survey data. This study focuses on understanding how interview disruptions affect response quality by examining variables related to both interviewer and respondent characteristics. The structured design of the dataset allowed for a thorough exploration of contextual disruptions and their influence on data reliability, providing valuable insights for enhancing survey methodologies.
 
 The decision to utilize the dataset was informed by its extensive scope and its inclusion of refined metadata concerning interview conditions and disruptions—elements that are typically absent in comparable survey datasets. Many alternative survey datasets, while providing general demographic information and attitudes, do not capture the essential contextual factors needed to assess disruptions during the interview process. For instance, unlike the ESS, many datasets fail to document interviewer characteristics, familial disruptions, or the specific type and frequency of interruptions during surveys. These contextual elements are indispensable for gaining an in-depth understanding of how disruptions can influence data quality. Therefore, the ESS was deemed the most suitable resource for this study, as it provides both the breadth and depth of information needed to rigorously analyze the factors affecting survey reliability and validity.
 
@@ -65,11 +65,11 @@ The dataset also includes country-level metadata, acknowledging that different c
 
 The following R packages were utilized to facilitate and streamline the data analysis process:
 
-- **arrow** [@arrow]: Employed for efficiently reading and writing large datasets, enhancing data handling across different systems.
+- **arrow** [@arrow].: Employed for efficiently reading and writing large datasets, enhancing data handling across different systems.
 
-- **knitr** [@knitr]: Used to create dynamic documents with R, including reports and presentations. It enables seamless integration of R code and text.
+- **knitr** [@knitr].: Used to create dynamic documents with R, including reports and presentations. It enables seamless integration of R code and text.
 
-- **rstanarm** [@rstanarm]: Provides tools for Bayesian regression modeling using the 'Stan' platform, making it straightforward to apply Bayesian models in a regression context.
+- **rstanarm** [@rstanarm].: Provides tools for Bayesian regression modeling using the 'Stan' platform, making it straightforward to apply Bayesian models in a regression context.
 
 - **tidyverse** [@tidyverse]: A collection of R packages used for data manipulation, visualization, and cleaning, providing a unified structure to handle complex data workflows.
 
@@ -295,10 +295,10 @@ After filtering and processing, the final dataset consists of **9,743 observatio
 # Model {#sec-model}
 In constructing the model, we paid particular attention to the inclusion of variables that directly impact the quality of survey responses, as well as those that provide essential context for respondent behavior. The choice to include "age" as a continuous variable rather than categorizing it into broad groups was a deliberate decision aimed at preserving the granularity of the data. This approach allowed us to capture more refined relationships between age and response quality, rather than assuming uniform effects within age brackets. By modeling age continuously, we were able to better detect subtle patterns or non-linear effects that would have otherwise been obscured by arbitrary group boundaries, ensuring a more precise analysis of its influence on both interviewer and respondent dynamics.
 
-In addition to age, we included variables such as "interview conduct method," various "interference types" (e.g., "partner_interference," "child_interference"), and "interviewer characteristics" to fully encapsulate the different factors known to impact response quality. These variables were selected based on their relevance in literature, including the work of Fowler and Mangione [@aquilino1993effects], which underscores the importance of interviewer attributes and environmental conditions in shaping survey data reliability. By including such factors, our model was able to reflect a realistic and integrated picture of the dynamics at play during social survey interviews, thereby providing a robust framework for analyzing how disruptions influence response accuracy.
+In addition to age, we included variables such as "interview conduct method," various "interference types" (e.g., "partner interference," "child interference"), and "interviewer characteristics" to fully encapsulate the different factors known to impact response quality. These variables were selected based on their relevance in literature, including the work of Fowler and Mangione [@aquilino1993effects], which underscores the importance of interviewer attributes and environmental conditions in shaping survey data reliability. By including such factors, our model was able to reflect a realistic and integrated picture of the dynamics at play during social survey interviews, thereby providing a robust framework for analyzing how disruptions influence response accuracy.
 
 ## Alternative model
-After evaluating both the decision tree model [@tbl-comprehension-matrix13] and the Bayesian GLM [@tbl-comprehension-matrix12] for classifying comprehension outcomes, a clear distinction in performance emerged. While the decision tree model demonstrated superior sensitivity and balanced accuracy in identifying the minority class, "Not_understood," the Bayesian GLM consistently achieved higher overall accuracy, with a score of 96.05% compared to the decision tree's 95.98%.
+After evaluating both the decision tree model [@tbl-comprehension-matrix13] and the Bayesian GLM [@tbl-comprehension-matrix12] for classifying comprehension outcomes, a clear distinction in performance emerged. While the decision tree model demonstrated superior sensitivity and balanced accuracy in identifying the minority class, "Not understood," the Bayesian GLM consistently achieved higher overall accuracy, with a score of 96.05% compared to the decision tree's 95.98%.
 
 Although the difference in accuracy is modest, the Bayesian GLM aligns more closely with the overarching objective of optimizing predictive performance across all classes. Furthermore, the Bayesian GLM's probabilistic framework provides a refined interpretation of predictions, capturing uncertainty and enabling more robust decision-making. Therefore, despite the decision tree's relative strength in minority class detection, the Bayesian GLM was selected as the final model due to its superior overall accuracy and its ability to provide a more balanced representation of both majority and minority classes. 
 ```{r}
@@ -349,8 +349,8 @@ kable(confusion_df, format = "markdown", col.names = c("Prediction", "Reference"
 
 # Confusion matrix definition
 confusion_matrix <- matrix(c(41, 36, 129, 3970), nrow = 2, byrow = TRUE,
-                           dimnames = list("Prediction" = c("Not_understood", "Understood"),
-                                           "Reference" = c("Not_understood", "Understood")))
+                           dimnames = list("Prediction" = c("Not understood", "Understood"),
+                                           "Reference" = c("Not understood", "Understood")))
 
 # Convert confusion matrix to data frame
 confusion_df <- as.data.frame(as.table(confusion_matrix))
@@ -417,7 +417,7 @@ Let $y_i$be the ordered categorical variable representing whether the respondent
     -   Reluctant Level 5
     -   (other possible levels of reluctance)
 
--   $\beta_{12}$: The coefficient for **respondent tried_best**, indicating whether the respondent tried their best to provide accurate answers during the survey. Categories include:
+-   $\beta_{12}$: The coefficient for **respondent tried best**, indicating whether the respondent tried their best to provide accurate answers during the survey. Categories include:
 
     -   Tried Best Level 2
     -   Tried Best Level 3
@@ -433,17 +433,17 @@ Each coefficient $\beta_j$ represents the effect of the $j$-th predictor on the 
 
 The model is specified as follows for ordered logistic regression:\begin{align}
 y_i &\sim \text{OrderedLogistic}(\eta_i, \kappa) \\
-\eta_i &= \beta_0 + \beta_{\text{interview\_conduct\_method}} \times \text{interview\_conduct\_method}_i \notag \\
-       &\quad + \beta_{\text{partner\_interference}} \times \text{partner\_interference}_i \notag \\
-       &\quad + \beta_{\text{child\_interference}} \times \text{child\_interference}_i 
-       + \beta_{\text{parent\_interference}} \times \text{parent\_interference}_i \notag \\
-       &\quad + \beta_{\text{non\_relative\_interference}} \times \text{non\_relative\_interference}_i 
-       + \beta_{\text{interviewer\_age}} \times \text{interviewer\_age}_i \notag \\
-       &\quad + \beta_{\text{interviewer\_gender}} \times \text{interviewer\_gender}_i 
+\eta_i &= \beta_0 + \beta_{\text{interview\ conduct\ method}} \times \text{interview\ conduct\ method}_i \notag \\
+       &\quad + \beta_{\text{partner\ interference}} \times \text{partner\ interference}_i \notag \\
+       &\quad + \beta_{\text{child\ interference}} \times \text{child\ interference}_i 
+       + \beta_{\text{parent\ interference}} \times \text{parent\ interference}_i \notag \\
+       &\quad + \beta_{\text{non\ relative\ interference}} \times \text{non\ relative\ interference}_i 
+       + \beta_{\text{interviewer\ age}} \times \text{interviewer\ age}_i \notag \\
+       &\quad + \beta_{\text{interviewer\ gender}} \times \text{interviewer\ gender}_i 
        + \beta_{\text{country}} \times \text{country}_i \notag \\
-       &\quad + \beta_{\text{question\_clarification}} \times \text{question\_clarification}_i 
-       + \beta_{\text{respondent\_reluctant}} \times \text{respondent\_reluctant}_i \notag \\
-       &\quad + \beta_{\text{respondent\_tried\_best}} \times \text{respondent\_tried\_best}_i \\
+       &\quad + \beta_{\text{question\ clarification}} \times \text{question\ clarification}_i 
+       + \beta_{\text{respondent\ reluctant}} \times \text{respondent\ reluctant}_i \notag \\
+       &\quad + \beta_{\text{respondent\ tried\ best}} \times \text{respondent\ tried\ best}_i \\
 \beta &\sim \text{Normal}(0, 10) \quad (\text{default non-informative prior}) \\
 \kappa &\sim \text{Normal}(0, 5) \quad (\text{default prior for cutpoints})
 \end{align}
@@ -584,8 +584,8 @@ Interestingly, interviewer_age exhibited an estimated effect near zero, with a b
 
 # Confusion matrix definition
 confusion_matrix <- matrix(c(41, 36, 129, 3970), nrow = 2, byrow = TRUE,
-                           dimnames = list("Prediction" = c("Not_understood", "Understood"),
-                                           "Reference" = c("Not_understood", "Understood")))
+                           dimnames = list("Prediction" = c("Not understood", "Understood"),
+                                           "Reference" = c("Not understood", "Understood")))
 
 # Convert confusion matrix to data frame
 confusion_df <- as.data.frame(as.table(confusion_matrix))
@@ -618,11 +618,11 @@ for (var in factor_vars) {
 
 # Predict probabilities and convert predicted_class to "Understood" and "Not_understood"
 predicted_prob <- predict(first_model, newdata = analysis_data_test, type = "response")
-analysis_data_test$predicted_class <- ifelse(predicted_prob > 0.5, "Understood", "Not_understood")
+analysis_data_test$predicted_class <- ifelse(predicted_prob > 0.5, "Understood", "Not understood")
 
 # Convert predicted_class and respondent_understood_binary to factors with consistent levels
-analysis_data_test$predicted_class <- factor(analysis_data_test$predicted_class, levels = c("Not_understood", "Understood"))
-analysis_data_test$respondent_understood_binary <- factor(analysis_data_test$respondent_understood_binary, levels = c("Not_understood", "Understood"))
+analysis_data_test$predicted_class <- factor(analysis_data_test$predicted_class, levels = c("Not understood", "Understood"))
+analysis_data_test$respondent_understood_binary <- factor(analysis_data_test$respondent_understood_binary, levels = c("Not understood", "Understood"))
 
 
 
@@ -633,14 +633,14 @@ confusion_matrix <- confusionMatrix(
 )
 
 confusion_matrix <- matrix(c(41, 36, 129, 3970), nrow = 2, byrow = TRUE,
-                           dimnames = list("Prediction" = c("Not_understood", "Understood"),
-                                           "Reference" = c("Not_understood", "Understood")))
+                           dimnames = list("Prediction" = c("Not understood", "Understood"),
+                                           "Reference" = c("Not understood", "Understood")))
 
 # Extract True Positive, False Positive, True Negative, and False Negative from the confusion matrix
-TP <- confusion_matrix["Not_understood", "Not_understood"]
-FP <- confusion_matrix["Not_understood", "Understood"]
+TP <- confusion_matrix["Not understood", "Not understood"]
+FP <- confusion_matrix["Not understood", "Understood"]
 TN <- confusion_matrix["Understood", "Understood"]
-FN <- confusion_matrix["Understood", "Not_understood"]
+FN <- confusion_matrix["Understood", "Not understood"]
 
 # Calculate evaluation metrics
 accuracy <- (TP + TN) / sum(confusion_matrix)
@@ -675,9 +675,9 @@ kable(metrics_df)
 
 
 ```
-@tbl-comprehension-matrix1 provides a summary of the model's prediction outcomes for the comprehension classification task. The table displays the frequencies of correct and incorrect predictions across the "Not_understood" and "Understood" categories. Correct classifications occur when the predicted and actual labels align (e.g., "Not_understood" predicted as "Not_understood"), while mismatches are shown as incorrect classifications (e.g., "Not_understood" predicted as "Understood"). This representation effectively highlights the model's ability to distinguish between the two classes, particularly its challenges in identifying the minority "Not_understood" category due to its smaller sample size.
+@tbl-comprehension-matrix1 provides a summary of the model's prediction outcomes for the comprehension classification task. The table displays the frequencies of correct and incorrect predictions across the "Not understood" and "Understood" categories. Correct classifications occur when the predicted and actual labels align (e.g., "Not understood" predicted as "Not understood"), while mismatches are shown as incorrect classifications (e.g., "Not understood" predicted as "Understood"). This representation effectively highlights the model's ability to distinguish between the two classes, particularly its challenges in identifying the minority "Not understood" category due to its smaller sample size.
 
-@tbl-comprehension-matrix2 presents key performance metrics for evaluating the classification model. Metrics such as Accuracy, Precision (Positive Predictive Value), Recall (True Positive Rate), Specificity (True Negative Rate), F1 Score, and Balanced Accuracy provide a detailed view of the model's strengths and limitations. The high Accuracy and Specificity values demonstrate the model's reliability in correctly classifying the majority "Understood" category. In contrast, the lower Recall for the "Not_understood" class indicates difficulties in detecting this minority group. These metrics offer a well-rounded understanding of the model's performance, balancing its effectiveness in majority class classification with areas for improvement in minority class sensitivity.
+@tbl-comprehension-matrix2 presents key performance metrics for evaluating the classification model. Metrics such as Accuracy, Precision (Positive Predictive Value), Recall (True Positive Rate), Specificity (True Negative Rate), F1 Score, and Balanced Accuracy provide a detailed view of the model's strengths and limitations. The high Accuracy and Specificity values demonstrate the model's reliability in correctly classifying the majority "Understood" category. In contrast, the lower Recall for the "Not understood" class indicates difficulties in detecting this minority group. These metrics offer a well-rounded understanding of the model's performance, balancing its effectiveness in majority class classification with areas for improvement in minority class sensitivity.
 
 # Discussion {#sec-discussion}
 
@@ -693,7 +693,7 @@ Conversely, interference from non-relatives demonstrated a contrasting effect. N
 ## Implications for Managing Interview Interference
 The implications of these findings are essential for improving survey practices, especially in managing the environment in which interviews are conducted. Since both partner and child interference are strongly linked with reduced comprehension, practical measures are warranted to mitigate these effects. Survey administrators could consider strategies such as conducting interviews in a controlled setting that minimizes the possibility of familial disruptions or providing respondents with explicit guidance on reducing interruptions during the interview.
 
-The significance of interview methods also warrants attention. Notably, the positive influence observed for "interview_conduct_method3" suggests that certain approaches to interviewing—potentially those incorporating more interaction or structured guidance—can substantially enhance comprehension. Training interviewers in these methods, which may include explicit clarity and engagement-promoting techniques, could lead to more consistent and high-quality data, particularly in settings prone to interference.
+The significance of interview methods also warrants attention. Notably, the positive influence observed for "interview conduct method3" suggests that certain approaches to interviewing—potentially those incorporating more interaction or structured guidance—can substantially enhance comprehension. Training interviewers in these methods, which may include explicit clarity and engagement-promoting techniques, could lead to more consistent and high-quality data, particularly in settings prone to interference.
 
 ## Limitations and Areas for Improvement
 The analysis also revealed certain limitations, particularly concerning the generalizability of findings across different demographic segments. The moderate predictive power of the model (mean R² approximately 0.32) indicates that while the analysis captures key variability, significant elements affecting comprehension remain unexplained. Factors such as cultural variations or socio-economic differences, which were not fully accounted for, might explain the negligible or inconsistent country-level effects observed in the model.
@@ -707,7 +707,7 @@ Moreover, exploring potential interaction effects between variables—such as th
 
 ## Practical observations for Survey Management
 
-The overarching lesson from this study is the significance of managing interview conditions to optimize respondent comprehension and, subsequently, data quality. Minimizing household disruptions, particularly familial interference, appears to be a essential factor in ensuring the accuracy and reliability of survey responses. Pre-interview guidelines that advise respondents on how to create a distraction-free environment could help mitigate these issues. Furthermore, adopting interactive and structured interview techniques, akin to the positively influential "interview_conduct_method3," could foster greater respondent engagement and understanding.
+The overarching lesson from this study is the significance of managing interview conditions to optimize respondent comprehension and, subsequently, data quality. Minimizing household disruptions, particularly familial interference, appears to be a essential factor in ensuring the accuracy and reliability of survey responses. Pre-interview guidelines that advise respondents on how to create a distraction-free environment could help mitigate these issues. Furthermore, adopting interactive and structured interview techniques, akin to the positively influential "interview conduct method3," could foster greater respondent engagement and understanding.
 
 The findings also suggest that focusing on the relational and contextual aspects of the interview environment may yield better outcomes than emphasizing interviewer-specific traits such as gender or age. Therefore, training programs for interviewers should prioritize environmental control and interaction quality to maximize the clarity and effectiveness of survey questioning.
 
@@ -726,7 +726,7 @@ To handle missing data, numeric variables were filled with their median values, 
 
 Subsequently, additional data cleaning measures were taken. We removed duplicate entries to ensure uniqueness and eliminated outliers in numeric columns using the Z-score method, retaining only those rows with Z-scores within ±3. This step was important for reducing the influence of extreme data points on subsequent analyses.
 
-To enhance clarity and usability, several column names were renamed to be more descriptive. For example, resundq was renamed to respondent_understood. Additionally, the respondent_understood variable was recoded into a binary form (Understood vs. Not_understood) to simplify future analyses.
+To enhance clarity and usability, several column names were renamed to be more descriptive. For example, resundq was renamed to respondent understood. Additionally, the respondent understood variable was recoded into a binary form (Understood vs. Not understood) to simplify future analyses.
 
 To further refine the dataset, we consolidated categories for variables with more than five distinct values, grouping the least frequent values into an "Other" category. The country variable was excluded from this process to preserve its geographic specificity, which was deemed integral for the analysis.
 
