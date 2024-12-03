@@ -55,7 +55,7 @@ The dataset for this study is sourced from the [European Social Survey](https://
 
 
 ## Overview
-We utilized the statistical programming language R [@citeR]. to prepare, analyze, and visualize the survey data. This study focuses on understanding how interview disruptions affect response quality by examining variables related to both interviewer and respondent characteristics. The structured design of the dataset allowed for a thorough exploration of contextual disruptions and their influence on data reliability, providing valuable insights for enhancing survey methodologies.
+We utilized the statistical programming language R [@citeR] to prepare, analyze, and visualize the survey data. This study focuses on understanding how interview disruptions affect response quality by examining variables related to both interviewer and respondent characteristics. The structured design of the dataset allowed for a thorough exploration of contextual disruptions and their influence on data reliability, providing valuable insights for enhancing survey methodologies.
 
 The decision to utilize the dataset was informed by its extensive scope and its inclusion of refined metadata concerning interview conditions and disruptions—elements that are typically absent in comparable survey datasets. Many alternative survey datasets, while providing general demographic information and attitudes, do not capture the essential contextual factors needed to assess disruptions during the interview process. For instance, unlike the ESS, many datasets fail to document interviewer characteristics, familial disruptions, or the specific type and frequency of interruptions during surveys. These contextual elements are indispensable for gaining an in-depth understanding of how disruptions can influence data quality. Therefore, the ESS was deemed the most suitable resource for this study, as it provides both the breadth and depth of information needed to rigorously analyze the factors affecting survey reliability and validity.
 
@@ -65,36 +65,36 @@ The dataset also includes country-level metadata, acknowledging that different c
 
 The following R packages were utilized to facilitate and streamline the data analysis process:
 
-- **arrow** [@arrow].: Employed for efficiently reading and writing large datasets, enhancing data handling across different systems.
+- **arrow** [@arrow]: Employed for efficiently reading and writing large datasets, enhancing data handling across different systems.
 
-- **knitr** [@knitr].: Used to create dynamic documents with R, including reports and presentations. It enables seamless integration of R code and text.
+- **knitr** [@knitr]: Used to create dynamic documents with R, including reports and presentations. It enables seamless integration of R code and text.
 
-- **rstanarm** [@rstanarm].: Provides tools for Bayesian regression modeling using the 'Stan' platform, making it straightforward to apply Bayesian models in a regression context.
+- **rstanarm** [@rstanarm]: Provides tools for Bayesian regression modeling using the 'Stan' platform, making it straightforward to apply Bayesian models in a regression context.
 
-- **tidyverse** [@tidyverse].: A collection of R packages used for data manipulation, visualization, and cleaning, providing a unified structure to handle complex data workflows.
+- **tidyverse** [@tidyverse]: A collection of R packages used for data manipulation, visualization, and cleaning, providing a unified structure to handle complex data workflows.
 
-- **ggplot2** [@ggplot2].: Utilized for creating detailed visualizations, offering a flexible grammar of graphics to develop sophisticated charts and graphs.
+- **ggplot2** [@ggplot2]: Utilized for creating detailed visualizations, offering a flexible grammar of graphics to develop sophisticated charts and graphs.
 
-- **bayesplot** [@bayesplot].: Facilitates the visualization of Bayesian model results, useful for diagnostic checks and interpreting the results of Bayesian models.
+- **bayesplot** [@bayesplot]: Facilitates the visualization of Bayesian model results, useful for diagnostic checks and interpreting the results of Bayesian models.
 
-- **ggridges** [@ggridges].: Used to create ridge plots, which are useful for visualizing distributions, enhancing the inquiry of posterior distributions from Bayesian models.
+- **ggridges** [@ggridges]: Used to create ridge plots, which are useful for visualizing distributions, enhancing the inquiry of posterior distributions from Bayesian models.
 
-- **broom.mixed** [@broom].: Extends the broom package to support models with random effects, summarizing mixed models in a tidy and interpretable format.
+- **broom.mixed** [@broom]: Extends the broom package to support models with random effects, summarizing mixed models in a tidy and interpretable format.
 
-- **kableExtra** [@kableExtra].: Enhances the basic table formatting capabilities of the 'knitr' package, providing additional functions for creating aesthetically pleasing and informative tables.
+- **kableExtra** [@kableExtra]: Enhances the basic table formatting capabilities of the 'knitr' package, providing additional functions for creating aesthetically pleasing and informative tables.
 
-- **car** [@car].: Used for regression diagnostics and statistical analysis, particularly integral for testing assumptions and evaluating model quality.
+- **car** [@car]: Used for regression diagnostics and statistical analysis, particularly integral for testing assumptions and evaluating model quality.
 
-- **loo** [@loo].: Provides tools for leave-one-out cross-validation, which was indispensable in assessing model performance and ensuring that the Bayesian models generalize well.
+- **loo** [@loo]: Provides tools for leave-one-out cross-validation, which was indispensable in assessing model performance and ensuring that the Bayesian models generalize well.
 
-- **modelsummary** [@modelsummary].: Summarizes statistical models in a clear, tabular format, supporting the communication of regression and other model results.
+- **modelsummary** [@modelsummary]: Summarizes statistical models in a clear, tabular format, supporting the communication of regression and other model results.
 
-- **caret** [@caret].: Provides a unified interface for training and tuning machine learning models, offering numerous functions for preprocessing data, feature selection, model training, and performance evaluation, which streamline the process of creating predictive models.
+- **caret** [@caret]: Provides a unified interface for training and tuning machine learning models, offering numerous functions for preprocessing data, feature selection, model training, and performance evaluation, which streamline the process of creating predictive models.
 
-- **rpart** [@rpart].: A integrated package for building recursive partitioning models, commonly used for creating decision trees. Particularly integral for classification and regression tasks, it supports model visualization and interpretation, offering control over tree complexity and pruning for enhanced model performance.
+- **rpart** [@rpart]: A integrated package for building recursive partitioning models, commonly used for creating decision trees. Particularly integral for classification and regression tasks, it supports model visualization and interpretation, offering control over tree complexity and pruning for enhanced model performance.
 
 
-- **_Telling Stories with Data_** [@tellingstories].: This book was referenced for its code and methodologies in presenting data and statistical information.
+- **_Telling Stories with Data_** [@tellingstories]: This book was referenced for its code and methodologies in presenting data and statistical information.
 
 ## Measurement
 Data quality in social surveys is a measurement of how accurately the collected responses reflect true respondent comprehension and the conditions influencing their answers. This study captures essential aspects of the interview process—such as different types of disruptions, modes of interview conduct, and respondent attitudes—to understand their impact on the reliability of responses. Disruptions during interviews, such as interruptions by family members, are systematically documented to assess their influence on the quality of data gathered.
@@ -464,7 +464,7 @@ In the Bayesian logistic regression model implemented using the `rstanarm` packa
 
 -   **Coefficient Priors**: Coefficients in the model are assigned normal prior distributions, also with a mean of 0 but with a smaller standard deviation, typically set around 2.5. This helps prevent the individual predictors from exerting overly large influences unless strongly supported by the data. For example, variables such as different types of interference (e.g., partner, child, parent) or interview methods benefit from such priors as they maintain moderate regularization to avoid overfitting.
 
-We ran the model in R [@citeR]. using the `rstanarm` package @rstanarm. The default priors from `rstanarm` provide an appropriate level of smoothing and regularization, making the model applicable to survey data with complex patterns while still allowing the data to reveal meaningful relationships, especially concerning factors that affect response quality.
+We ran the model in R [@citeR] using the `rstanarm` package @rstanarm. The default priors from `rstanarm` provide an appropriate level of smoothing and regularization, making the model applicable to survey data with complex patterns while still allowing the data to reveal meaningful relationships, especially concerning factors that affect response quality.
 
 ## Model justification
 
